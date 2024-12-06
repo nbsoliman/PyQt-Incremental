@@ -1,0 +1,35 @@
+{
+  "resources": {
+    "people": 1,
+    "gold": 100,
+    "wood": 0,
+    "stone": 0
+  },
+  "workers": {
+    "builders": {
+      "1": 0
+    },
+    "lumbermen": {
+      "1": 0
+    },
+    "miners": {
+      "1": 0
+    },
+    "merchants": {
+      "1": 0
+    },
+    "military": {
+      "1": 0
+    }
+  },
+  "buildings": {
+    "Town Hall": {
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "location": {
+        "x": 10,
+        "y": 10
+      }
+    }
+  }
+}
