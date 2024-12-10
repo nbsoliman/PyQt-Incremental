@@ -1,5 +1,6 @@
 from resources.ResourceManager import ResourceManager
 from resources.ScrollableGrid import ScrollableGrid
+from resources.Space3D import Planet3DWidget
 import qdarktheme
 import json, os, sys, traceback, re, random
 from functools import partial
@@ -64,6 +65,8 @@ class MainUI(QWidget):
         self.stackedWidget.setCurrentIndex(0)
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stackedWidget)
+        main_layout.setContentsMargins(0, 20, 0, 0)
+        main_layout.setSpacing(0)
         self.setLayout(main_layout)
 
     def createMainMenu(self):
@@ -82,6 +85,7 @@ class MainUI(QWidget):
 
     def createHomePage(self):
         home_page = QGridLayout()
+        home_page.setContentsMargins(0, 0, 0, 0)
         self.tabWidget = QTabWidget()
         self.tabWidget.setStyleSheet(f"""
             QTabWidget::pane {{
@@ -91,21 +95,26 @@ class MainUI(QWidget):
                 margin: 0px;
                 }}
         """)
-        self.tab1 = QWidget()
+        self.galaxy_tab = QWidget()
+        self.buildings_tab = QWidget()
         self.tab2 = QWidget()
         self.tab3 = QWidget()
         self.tab4 = QWidget()
-        tabIndex1 = self.tabWidget.addTab(self.tab1, "Home")
+        tabIndex0 = self.tabWidget.addTab(self.galaxy_tab, "Galaxy")
+        tabIndex1 = self.tabWidget.addTab(self.buildings_tab, "Buildings")
         tabIndex2 = self.tabWidget.addTab(self.tab2, "Research")
         tabIndex3 = self.tabWidget.addTab(self.tab3, "Graphs")
         tabIndex4 = self.tabWidget.addTab(self.tab4, "Settings")
-        self.tabWidget.setTabIcon(tabIndex1, QIcon(self.resources.resource_path("resources/home.png")))
-        self.tabWidget.setTabIcon(tabIndex2, QIcon(self.resources.resource_path("resources/list-check.png")))
-        self.tabWidget.setTabIcon(tabIndex3, QIcon(self.resources.resource_path("resources/graph-up.png")))
-        self.tabWidget.setTabIcon(tabIndex3, QIcon(self.resources.resource_path("resources/graph-up.png")))
-        self.tabWidget.setTabIcon(tabIndex4, QIcon(self.resources.resource_path("resources/gear.png")))
+        self.tabWidget.setTabIcon(tabIndex0, QIcon(self.resources.resource_path("assets/home.png")))
+        self.tabWidget.setTabIcon(tabIndex1, QIcon(self.resources.resource_path("assets/home.png")))
+        self.tabWidget.setTabIcon(tabIndex2, QIcon(self.resources.resource_path("assets/list-check.png")))
+        self.tabWidget.setTabIcon(tabIndex3, QIcon(self.resources.resource_path("assets/graph-up.png")))
+        self.tabWidget.setTabIcon(tabIndex3, QIcon(self.resources.resource_path("assets/graph-up.png")))
+        self.tabWidget.setTabIcon(tabIndex4, QIcon(self.resources.resource_path("assets/gear.png")))
         self.tabWidget.setIconSize(QSize(32, 32))
-        self.tab1.setLayout(self.ui1())
+
+        self.galaxy_tab.setLayout(self.galaxy_ui())
+        self.buildings_tab.setLayout(self.buildings_ui())
         self.tab2.setLayout(self.ui2())
         self.tab3.setLayout(self.ui3())
         self.tab4.setLayout(self.ui_settings())
@@ -157,7 +166,6 @@ class MainUI(QWidget):
         h.addWidget(stone_group)
         # resource_bar.setLayout(h)
 
-
         # home_page.addWidget(resource_bar, 0, 0, 1, 4)
         home_page.addLayout(h, 0, 0, 1, 4)
         home_page.addWidget(self.tabWidget, 1, 0, 1, 4)
@@ -168,12 +176,24 @@ class MainUI(QWidget):
         home_page_widget.setLayout(home_page)
         self.stackedWidget.addWidget(home_page_widget)
 
-    def ui1(self):
-        ui1_layout = QVBoxLayout(self)
-        ui1_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_area = ScrollableGrid(self)
+    def galaxy_ui(self):
+        backdrop_layout = QVBoxLayout()
+        backdrop_layout.setContentsMargins(0, 0, 0, 0)
+        backdrop_layout.setSpacing(0)
+
+        self.planet_widget = Planet3DWidget()
+        backdrop_layout.addWidget(self.planet_widget)
+        return backdrop_layout
+        
+    def buildings_ui(self):
+        buildings_layout = QVBoxLayout()
+        buildings_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area = ScrollableGrid(bg_filename=self.resources.resource_path("assets/planet1.jpg"), parent=self)
         scroll_area_widget = QWidget()
         grid_layout = QGridLayout(scroll_area_widget)
+        # grid_layout.setSpacing(0)
+        grid_layout.setHorizontalSpacing(20)
+        grid_layout.setVerticalSpacing(10)
 
         for i in range(21):
             for j in range(21):
@@ -183,6 +203,7 @@ class MainUI(QWidget):
                 v = QVBoxLayout()
                 building_found = False
                 for building, details in self.resources.data['buildings'].items():
+                    # print(building,':',details)
                     if details['location']['x'] == i and details['location']['y'] == j:
                         t.setStyleSheet('QWidget#b1 { border: 1px solid #f7d68a; padding:10px; background: #1e1e1e}')
                         label = QLabel(building)
@@ -193,43 +214,21 @@ class MainUI(QWidget):
                         building_found = True
                         break
                 if not building_found:
-                    t.setStyleSheet('QWidget#b1 { border: none; padding:10px}')
+                    t.setStyleSheet('QWidget#b1 { border: none; padding:10px;}')
                     button = QPushButton(f'Build', scroll_area_widget)
                     button.setStyleSheet(f"border: none; background: transparent; color: {colors['light-text']}")
                     v.addWidget(button)
                 t.setLayout(v)
                 grid_layout.addWidget(t, i, j)
 
-        # how do i set the height and width of these groupboxes to be fiixed
-
         self.scroll_area.setWidget(scroll_area_widget)
-        ui1_layout.addWidget(self.scroll_area)
-
-        # increase_padding_button = QPushButton('Zoom In', self)
-        # decrease_padding_button = QPushButton('Zoom Out', self)
-
-        # def adjust_padding(increase=True):
-        #     for i in range(grid_layout.count()):
-        #         item = grid_layout.itemAt(i).widget()
-        #         current_style = item.styleSheet()
-        #         padding_value = int(re.search(r"padding:(\d+)px", current_style).group(1))
-        #         new_padding = max(0, padding_value + (5 if increase else -5))
-        #         item.setStyleSheet(f"padding:{new_padding}px")
-        #         item.width = (item.height())
-        #         item.hasHeightForWidth()
-
-        # increase_padding_button.clicked.connect(lambda: adjust_padding(True))
-        # decrease_padding_button.clicked.connect(lambda: adjust_padding(False))
-        # button_layout = QHBoxLayout()
-        # button_layout.addWidget(increase_padding_button)
-        # button_layout.addWidget(decrease_padding_button)
+        buildings_layout.addWidget(self.scroll_area)
         
-        # ui1_layout.addLayout(button_layout)
         QTimer.singleShot(0, self.centerScrollArea)
-        return ui1_layout
+        return buildings_layout
     
     def ui2(self):
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
         
         self.progressBars = [QProgressBar(self) for _ in range(5)]
 
@@ -478,12 +477,12 @@ class MainUI(QWidget):
 
     def tab_changed(self, index):
         self.current_tab_index = index
-        if index == 0:
-            self.titleLabel.setText("    Home")
-        if index == 1:
-            self.titleLabel.setText("    Tab 1")
-        if index == 2:
-            self.titleLabel.setText("    Settings")
+        # if index == 0:
+        #     self.titleLabel.setText("    Home")
+        # if index == 1:
+        #     self.titleLabel.setText("    Tab 1")
+        # if index == 2:
+        #     self.titleLabel.setText("    Settings")
 
     def center(self):
         qr = self.frameGeometry()
