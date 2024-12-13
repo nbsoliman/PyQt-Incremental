@@ -479,8 +479,8 @@ class MainUI(QWidget):
         self.current_tab_index = index
         # if index == 0:
         #     self.titleLabel.setText("    Home")
-        # if index == 1:
-        #     self.titleLabel.setText("    Tab 1")
+        if index == 1:
+            QTimer.singleShot(0, self.centerScrollArea)
         # if index == 2:
         #     self.titleLabel.setText("    Settings")
 
