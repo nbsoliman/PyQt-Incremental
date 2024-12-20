@@ -13,26 +13,27 @@ class MapViewer(QGraphicsView):
         self.setScene(self.scene)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
-        self.grid_size = 50  # Size of each grid cell
-        self.scene.setSceneRect(0, 0, 1000, 1000)  # Example scene size
+        self.grid_size = 30  # Size of each grid cell
+        self.scene.setSceneRect(0, 0, 800, 500)
         self.draw_grid()
         self.add_clickable_objects()
-        # self.set_background_image()
+        initial_zoom_factor = 1.5
+        self.scale(initial_zoom_factor, initial_zoom_factor)
+        self.set_background_image()
 
     def draw_grid(self):
         """Draw evenly spaced grid."""
         for x in range(0, int(self.scene.width()), self.grid_size):
             for y in range(0, int(self.scene.height()), self.grid_size):
                 rect = QRectF(x, y, self.grid_size, self.grid_size)
-                self.scene.addRect(rect, brush=QBrush(Qt.GlobalColor.transparent))
+                self.scene.addRect(rect, QPen(QColor("#272727")), brush=QBrush(Qt.GlobalColor.transparent ))
 
     def add_clickable_objects(self):
         """Add clickable objects to the scene."""
         for i in range(5):  # Example: Add 5 objects
-            rect_item = QGraphicsRectItem(i * 100, i * 100, 50, 50)
-            rect_item.setBrush(QBrush(Qt.GlobalColor.blue))
-            rect_item.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable)
-            rect_item.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable)
+            margin = 5
+            rect_item = QGraphicsRectItem(i * 100 + margin/2, i * 100 + margin/2, self.grid_size-margin, self.grid_size-margin)
+            rect_item.setBrush(QBrush(QColor("#1e1e1e")))
             rect_item.setData(0, f"Object_{i}")  # Assign a unique ID or name to each object
             rect_item.mousePressEvent = self.object_clicked
             self.scene.addItem(rect_item)
@@ -48,21 +49,30 @@ class MapViewer(QGraphicsView):
     def wheelEvent(self, event):
         zoom_in_factor = 1.15
         zoom_out_factor = 1 / zoom_in_factor
-        min_scale = 0.5  # minimum scale factor to prevent too much zoom out
 
-        # Get the current scale of the transform
+        visible_height = self.viewport().height()
+        scene_height = self.scene.sceneRect().height()
+
+        if visible_height > scene_height:
+            visible_height = scene_height
+
+        max_zoom_out_scale = scene_height / visible_height
+        min_scale = max_zoom_out_scale
+        max_scale = 2.0
+
         current_scale = self.transform().m11()
 
-        if event.angleDelta().y() > 0:  # Zoom in
+        if event.angleDelta().y() > 0 and current_scale * zoom_in_factor <= max_scale:  # Zoom in
             self.scale(zoom_in_factor, zoom_in_factor)
-        else:  # Zoom out
-            if current_scale * zoom_out_factor >= min_scale:
-                self.scale(zoom_out_factor, zoom_out_factor)
+        elif event.angleDelta().y() < 0 and current_scale * zoom_out_factor >= min_scale:  # Zoom out
+            self.scale(zoom_out_factor, zoom_out_factor)
+        
+        event.accept()
 
     def set_background_image(self):
         """Set the background image for the scene."""
         pixmap = QPixmap(self.bg_filename)
-        self.scene.setBackgroundBrush(QBrush(pixmap.scaled(self.scene.sceneRect().size().toSize(), Qt.AspectRatioMode.KeepAspectRatio)))
+        self.scene.setBackgroundBrush(QBrush(pixmap.scaledToHeight(self.scene.sceneRect().height(), Qt.TransformationMode.SmoothTransformation)))
 
     def setBackground(self):
         palette = QPalette()
