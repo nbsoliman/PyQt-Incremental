@@ -82,23 +82,25 @@ class MapViewer(QGraphicsView):
                     proxy_widget.setGeometry(QRectF(x * self.grid_size + margin/2, y * self.grid_size + margin/2, self.grid_size-margin, self.grid_size-margin))
                     self.scene.addItem(proxy_widget)
                 # No building
-                elif x < int(space/2)+(visible_range+1) and x > int(space/2)-(visible_range+1) and y < int(space/2)+(visible_range+1) and y > int(space/2)-(visible_range+1):
+                # elif x < int(space/2)+(visible_range+1) and x > int(space/2)-(visible_range+1) and y < int(space/2)+(visible_range+1) and y > int(space/2)-(visible_range+1):
+                else:
                     widget = QWidget()
                     # widget.setStyleSheet('background: red')
                     vbox = QVBoxLayout(widget)
                     icon_label = QLabel()
                     icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                    icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
                     icon_label.setPixmap(icon_pixmap)
                     vbox.insertWidget(0, icon_label)
                     proxy_widget = QGraphicsProxyWidget()
                     proxy_widget.setWidget(widget)
                     proxy_widget.setGeometry(QRectF(x * self.grid_size+10, y * self.grid_size+10, self.grid_size-20, self.grid_size-20))
                     self.scene.addItem(proxy_widget)
-                    icon_label.mouseDoubleClickEvent = lambda event: self.build_pressed()
+                    icon_label.mousePressEvent = lambda event: self.build_pressed()
+                    # icon_label.mouseDoubleClickEvent = lambda event: self.build_pressed()
                 # Not Visible
-                else:
-                    pass
+                # else:
+                #     pass
     
     def update_fixed_button_position(self):
         self.fixed_button.move(self.viewport().width() - self.fixed_button.width() -10, 

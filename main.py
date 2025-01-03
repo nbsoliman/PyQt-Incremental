@@ -61,9 +61,11 @@ class MainUI(QWidget):
         self.setWindowTitle("GUI")
         self.resize(1080, 720)
         self.stackedWidget = QStackedWidget(self)
-        self.createMainMenu()
-
         self.stackedWidget.setCurrentIndex(0)
+        # self.createMainMenu()
+        self.newGamePressed()
+        QTimer.singleShot(100, lambda: self.tabWidget.setCurrentIndex(1))
+
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stackedWidget)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -342,7 +344,7 @@ class MainUI(QWidget):
         layout.setColumnStretch(1, 1)
         
         self.right_gb = QGroupBox()
-        self.right_gb.setFixedWidth(200)
+        self.right_gb.setFixedWidth(400)
         self.right_gb.setStyleSheet('''QGroupBox {
                                 background: transparent;
                                 font-size: 18px;
@@ -362,7 +364,7 @@ class MainUI(QWidget):
         self.buildings_title.setStyleSheet("font-size: 22px; font-weight: bold")
         self.buildings_info = QLabel("Select a plot")
         self.buildings_upgrade1 = QPushButton("")
-        upgrade_layout.addWidget(self.buildings_title, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        upgrade_layout.addWidget(self.buildings_title, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         upgrade_layout.addWidget(self.buildings_info, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
         upgrade_layout.addWidget(self.buildings_upgrade1, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
         widget1 = QWidget()
@@ -370,13 +372,44 @@ class MainUI(QWidget):
         self.buildings_layout_stack.addWidget(widget1)
 
         build_layout = QGridLayout()
-        self.buildings_title2 = QLabel("Build New Structure")
+        self.buildings_title2 = QLabel("Build Menu")
         self.buildings_title2.setStyleSheet("font-size: 22px; font-weight: bold")
-        self.buildings_info2 = QLabel("Select a plot to build")
-        self.buildings_upgrade12 = QPushButton("")
-        build_layout.addWidget(self.buildings_title2, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
-        build_layout.addWidget(self.buildings_info2, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
-        build_layout.addWidget(self.buildings_upgrade12, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+
+        def create_building_widget(name, description, cost, icon_path, row):
+            icon_label = QLabel()
+            icon_label.setPixmap(QPixmap(icon_path).scaled(16, 16, Qt.AspectRatioMode.KeepAspectRatio))
+
+            info_layout = QVBoxLayout()
+            name_label = QLabel(name)
+            name_label.setStyleSheet("font-size: 14px; font-weight: bold")
+            description_label = QLabel(description)
+            description_label.setStyleSheet("font-size: 10px; color: #818181")
+            description_label.setWordWrap(True)
+            info_layout.addWidget(name_label)
+            info_layout.addWidget(description_label)
+
+            cost_label = QLabel(f"Cost: {cost}")
+            cost_label.setStyleSheet("font-size: 10px; color: #f7d68a")
+            buy_button = QPushButton("Buy")
+
+            build_layout.addWidget(icon_label, row, 0, 1, 1)
+            build_layout.addLayout(info_layout, row, 1, 1, 1)
+            build_layout.addWidget(cost_label, row, 2, 1, 1)
+            build_layout.addWidget(buy_button, row, 3, 1, 1)
+        
+        build_layout.addWidget(self.buildings_title2, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        create_building_widget("Miner", "Extracts minerals from the ground.", "100 Gold", self.resources.resource_path('assets/icons/coin.svg'), 1)
+        create_building_widget("Harvester", "Gathers resources from the environment.", "150 Gold", self.resources.resource_path('assets/icons/coin.svg'), 2)
+        create_building_widget("Merchant's Guild", "Trades resources with other planets.", "200 Gold", self.resources.resource_path('assets/icons/coin.svg'), 3)
+        create_building_widget("Housing", "Provides shelter for people.", "50 Gold", self.resources.resource_path('assets/icons/coin.svg'), 4)
+        create_building_widget("Assembler", "Assembles complex structures.", "300 Gold", self.resources.resource_path('assets/icons/coin.svg'), 5)
+        create_building_widget("Manufacturer", "Produces goods for trade.", "400 Gold", self.resources.resource_path('assets/icons/coin.svg'), 6)
+        build_layout.setColumnStretch(0, 1)
+        build_layout.setColumnStretch(1, 3)
+        build_layout.setColumnStretch(2, 3)
+        build_layout.setColumnStretch(3, 3)
+        build_layout.setRowStretch(0, 1)
+
         widget2 = QWidget()
         widget2.setLayout(build_layout)
         self.buildings_layout_stack.addWidget(widget2)
@@ -652,7 +685,7 @@ class MainUI(QWidget):
         self.move(qr.topLeft())
 
     def resizeEvent(self, event):
-        if self.overlay_widget:
+        if hasattr(self, 'overlay_widget'):
             self.overlay_widget.setGeometry((self.width() - 300) // 2,(self.height() - 400) // 2,300,500)
         super().resizeEvent(event)
 
