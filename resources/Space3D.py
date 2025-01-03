@@ -128,6 +128,7 @@ class Planet3DWidget(QOpenGLWidget):
         self.zoom = -15.0
         self.textures = {}
         self.lock_controls = False
+        self.toggle_autopan()
 
     def load_texture(self, image_path):
         img = Image.open(image_path)
@@ -285,7 +286,21 @@ class Planet3DWidget(QOpenGLWidget):
             self.zoom += event.angleDelta().y() / 120.0
             self.zoom = max(min_zoom, min(self.zoom, max_zoom))  # Clamp the zoom level
             self.update()
+    
+    def toggle_autopan(self):
+        if hasattr(self, 'autopan_timer') and self.autopan_timer.isActive():
+            self.autopan_timer.stop()
+            self.lock_controls = False
+        else:
+            self.autopan_timer = QTimer(self)
+            self.autopan_timer.timeout.connect(self.autopan)
+            self.autopan_timer.start(33)  # 30fps -> 1000ms/30fps = ~33ms per frame
+            self.lock_controls = True
 
+    def autopan(self):
+        self.angle_y += 0.5
+        self.angle_x += 0.1
+        self.update()
 # self.planet_widget = Planet3DWidget()
 
 # class MainWindow(QMainWindow):
@@ -406,7 +421,7 @@ class MainWindow(QMainWindow):
         overlay_label.setStyleSheet("color: white; font-size: 18px;")
         overlay_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        overlay_button1 = QPushButton("Button 1")
+        overlay_button1 = QPushButton("New Game")
         overlay_button1.setStyleSheet("""
             QPushButton {
                 background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
@@ -421,7 +436,7 @@ class MainWindow(QMainWindow):
             }
         """)
 
-        overlay_button2 = QPushButton("Button 2")
+        overlay_button2 = QPushButton("Load Game")
         overlay_button2.setStyleSheet("""
             QPushButton {
                 background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */

@@ -1,5 +1,6 @@
 from resources.ResourceManager import ResourceManager
 from resources.ScrollableGrid import ScrollableGrid
+from resources.MapViewer import MapViewer
 from resources.Space3D import Planet3DWidget
 import qdarktheme
 import json, os, sys, traceback, re, random
@@ -58,31 +59,139 @@ class MainUI(QWidget):
         super().__init__()
         self.resources = ResourceManager()
         self.setWindowTitle("GUI")
-        self.resize(250,150)
+        self.resize(1080, 720)
         self.stackedWidget = QStackedWidget(self)
         self.createMainMenu()
 
         self.stackedWidget.setCurrentIndex(0)
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stackedWidget)
-        main_layout.setContentsMargins(0, 20, 0, 0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         self.setLayout(main_layout)
 
     def createMainMenu(self):
-        main_menu = QVBoxLayout()
-        main_menu.addWidget(QLabel("Main Menu", alignment=Qt.AlignmentFlag.AlignCenter))
-        new_game_button = QPushButton("New")
+        self.backdrop_layout = QVBoxLayout()
+        self.backdrop_layout.setContentsMargins(0, 0, 0, 0)
+        self.backdrop_layout.setSpacing(0)
+
+        self.this_widget = QWidget()
+        self.this_widget.setLayout(self.backdrop_layout)
+        self.this_widget.setStyleSheet('background: transparent')
+
+        self.planet_widget = Planet3DWidget()
+        self.backdrop_layout.addWidget(self.planet_widget)
+        self.overlay_widget = self.create_overlay_layout()
+
+        self.stackedWidget.addWidget(self.this_widget)
+
+    def create_overlay_layout(self):
+        # Overlay container
+        overlay_layout = QVBoxLayout()
+        overlay_layout.setContentsMargins(10, 10, 10, 10)
+        overlay_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        overlay_frame = QFrame()
+        overlay_frame.setStyleSheet("""
+            QFrame {
+                background-color: rgba(0, 0, 0, 0);  /* Semi-transparent black */
+                border-radius: 10px;
+            }
+        """)
+        overlay_frame.setFixedWidth(300)  # Set a fixed width for the overlay
+
+        overlay_content_layout = QVBoxLayout()
+        overlay_content_layout.setContentsMargins(10, 10, 10, 10)
+        overlay_content_layout.setSpacing(10)
+
+        overlay_label = QLabel("Space Simulator")
+        overlay_label.setStyleSheet("color: white; font-size: 32px;")
+        overlay_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        new_game_button = QPushButton("New Game")
+        new_game_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+                border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 16px;
+                color: white;  /* Text color */
+            }
+            QPushButton:hover {
+                background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+            }
+        """)
         new_game_button.clicked.connect(self.newGamePressed)
-        main_menu.addWidget(new_game_button)
-        load_game_button = QPushButton('Load')
+
+        load_game_button = QPushButton("Load Game")
+        load_game_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+                border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 16px;
+                color: white;  /* Text color */
+            }
+            QPushButton:hover {
+                background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+            }
+        """)
         load_game_button.clicked.connect(self.loadGamePressed)
-        main_menu.addWidget(load_game_button)
 
-        main_menu_widget = QWidget()
-        main_menu_widget.setLayout(main_menu)
-        self.stackedWidget.addWidget(main_menu_widget)
+        settings_button = QPushButton("Settings")
+        settings_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+                border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 16px;
+                color: white;  /* Text color */
+            }
+            QPushButton:hover {
+                background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+            }
+        """)
 
+        exit_button = QPushButton("Quit Game")
+        exit_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+                border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+                border-radius: 10px;
+                padding: 10px;
+                font-size: 16px;
+                color: white;  /* Text color */
+            }
+            QPushButton:hover {
+                background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+            }
+        """)
+
+        overlay_content_layout = QVBoxLayout()
+        overlay_content_layout.setContentsMargins(10, 10, 10, 10)
+        overlay_content_layout.setSpacing(10)
+
+        overlay_content_layout.addWidget(overlay_label)
+        overlay_content_layout.addStretch(1)
+        overlay_content_layout.addWidget(new_game_button)
+        overlay_content_layout.addWidget(load_game_button)
+        overlay_content_layout.addWidget(settings_button)
+        overlay_content_layout.addWidget(exit_button)
+        overlay_content_layout.addStretch()
+
+        overlay_frame.setLayout(overlay_content_layout)
+        overlay_layout.addWidget(overlay_frame)
+
+        overlay_widget = QWidget(self.this_widget)
+        overlay_widget.setLayout(overlay_layout)
+        overlay_widget.setGeometry(110, self.height()-400, 300, 500)  # Initial position
+        overlay_widget.show()
+
+        return overlay_widget
+    
     def createHomePage(self):
         home_page = QGridLayout()
         home_page.setContentsMargins(0, 0, 0, 0)
@@ -114,7 +223,7 @@ class MainUI(QWidget):
         self.tabWidget.setIconSize(QSize(32, 32))
 
         self.galaxy_tab.setLayout(self.galaxy_ui())
-        self.buildings_tab.setLayout(self.buildings_ui())
+        self.buildings_tab.setLayout(self.buildings_ui2())
         self.tab2.setLayout(self.ui2())
         self.tab3.setLayout(self.ui3())
         self.tab4.setLayout(self.ui_settings())
@@ -226,6 +335,57 @@ class MainUI(QWidget):
         
         QTimer.singleShot(0, self.centerScrollArea)
         return buildings_layout
+    
+    def buildings_ui2(self):
+        layout = QGridLayout()
+        layout.setColumnStretch(0, 4)
+        layout.setColumnStretch(1, 1)
+        
+        self.right_gb = QGroupBox()
+        self.right_gb.setFixedWidth(200)
+        self.right_gb.setStyleSheet('''QGroupBox {
+                                background: transparent;
+                                font-size: 18px;
+                                font-weight: bold;
+                                padding: 0px;
+                                border-radius: 10px;
+                                border: 1px solid #1e1e1e;
+                                margin: 0px;
+                            }''')
+
+        self.buildings_layout_stack = QStackedWidget(self.right_gb)
+        tmp = QGridLayout(self.right_gb)
+        tmp.addWidget(self.buildings_layout_stack)
+
+        upgrade_layout = QGridLayout()
+        self.buildings_title = QLabel()
+        self.buildings_title.setStyleSheet("font-size: 22px; font-weight: bold")
+        self.buildings_info = QLabel("Select a plot")
+        self.buildings_upgrade1 = QPushButton("")
+        upgrade_layout.addWidget(self.buildings_title, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        upgrade_layout.addWidget(self.buildings_info, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        upgrade_layout.addWidget(self.buildings_upgrade1, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        widget1 = QWidget()
+        widget1.setLayout(upgrade_layout)
+        self.buildings_layout_stack.addWidget(widget1)
+
+        build_layout = QGridLayout()
+        self.buildings_title2 = QLabel("Build New Structure")
+        self.buildings_title2.setStyleSheet("font-size: 22px; font-weight: bold")
+        self.buildings_info2 = QLabel("Select a plot to build")
+        self.buildings_upgrade12 = QPushButton("")
+        build_layout.addWidget(self.buildings_title2, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        build_layout.addWidget(self.buildings_info2, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        build_layout.addWidget(self.buildings_upgrade12, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+        widget2 = QWidget()
+        widget2.setLayout(build_layout)
+        self.buildings_layout_stack.addWidget(widget2)
+
+        self.map_viewer = MapViewer(parent=self)
+
+        layout.addWidget(self.map_viewer, 0, 0, 1, 1)
+        layout.addWidget(self.right_gb, 0, 1, 1, 1)
+        return layout
     
     def ui2(self):
         layout = QVBoxLayout()
@@ -461,15 +621,16 @@ class MainUI(QWidget):
         self.resources.create()
         self.createHomePage()
         self.stackedWidget.setCurrentIndex(1)
-        self.resize(750,550)
+        # self.resize(750,550)
         self.center()
+        self.planet_widget.toggle_autopan()
 
         # QTimer.singleShot(100, lambda: self.stackedWidget.setCurrentIndex(1))
         # QTimer.singleShot(100, lambda: self.resize(750,550))
         # QTimer.singleShot(150, lambda: self.center())
     
     def loadGamePressed(self):
-        self.resize(750,550)
+        # self.resize(750,550)
         self.center()
         self.resources.load()
         self.createHomePage()
@@ -479,8 +640,8 @@ class MainUI(QWidget):
         self.current_tab_index = index
         # if index == 0:
         #     self.titleLabel.setText("    Home")
-        if index == 1:
-            QTimer.singleShot(0, self.centerScrollArea)
+        # if index == 1:
+        #     QTimer.singleShot(0, self.centerScrollArea)
         # if index == 2:
         #     self.titleLabel.setText("    Settings")
 
@@ -489,6 +650,11 @@ class MainUI(QWidget):
         cp = self.screen().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    def resizeEvent(self, event):
+        if self.overlay_widget:
+            self.overlay_widget.setGeometry((self.width() - 300) // 2,(self.height() - 400) // 2,300,500)
+        super().resizeEvent(event)
 
 app = QApplication(sys.argv)
 app.setStyleSheet(qdarktheme.load_stylesheet())

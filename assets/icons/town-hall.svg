@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="128" height="128">
+  <defs>
+    <pattern id="planks" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#c29b68" />
+      <line x1="0" y1="10" x2="10" y2="10" stroke="#8f6e45" stroke-width="0.5" />
+      <line x1="0" y1="5" x2="10" y2="5" stroke="#8f6e45" stroke-width="0.5" />
+    </pattern>
+    <pattern id="tiles" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#c29b68" />
+      <path d="M0 10 Q 5 0 10 10" fill="none" stroke="#8f6e45" stroke-width="0.5"/>
+      <path d="M-5 5 Q 0 0 5 5 Q 10 10 15 5" fill="none" stroke="#8f6e45" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect x="10" y="40" width="80" height="50" fill="url(#planks)" />
+  <path d="M10 40 L50 10 L90 40 Z" fill="url(#tiles)" />
+  <rect x="30" y="55" width="40" height="35" fill="#5f4017" />
+  <rect x="45" y="70" width="10" height="15" fill="#ffffff" />
+</svg>
