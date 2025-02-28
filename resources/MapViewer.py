@@ -45,12 +45,12 @@ class MapViewer(QGraphicsView):
     def add_clickable_objects(self):
         visible_range = 1
         space = int(self.dimensions/self.grid_size)
+        margin = int(self.grid_size/10)
         for x in range(space):
             for y in range(space):
                 # Current Buildings
                 if x < int(space/2)+visible_range and x > int(space/2)-visible_range and y < int(space/2)+visible_range and y > int(space/2)-visible_range:
                     # self.parent.resources
-                    margin = int(self.grid_size/10)
                     widget = QWidget()
                     widget.setStyleSheet('background: transparent')
                     t = QGroupBox(widget)
@@ -65,10 +65,10 @@ class MapViewer(QGraphicsView):
                     icon_label.setPixmap(icon_pixmap)
                     
                     layout.insertWidget(0, icon_label)
-                    label = QLabel(f"Town Hall")
+                    label = QLabel(f"Antenna")
                     label.setStyleSheet('font-size: 32px')
                     label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    button = QPushButton('Upgrade')
+                    button = QPushButton('Amplitude')
                     button.setStyleSheet('font-size: 24px; background: #1e1e1e; border: 3px solid #8AB4F7; border-radius: 14px;')
                     button.setCursor(Qt.CursorShape.PointingHandCursor)
                     layout.addWidget(label)
@@ -88,13 +88,14 @@ class MapViewer(QGraphicsView):
                     # widget.setStyleSheet('background: red')
                     vbox = QVBoxLayout(widget)
                     icon_label = QLabel()
+                    icon_label.setStyleSheet("background: #1e1e1e")
                     icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
                     icon_label.setPixmap(icon_pixmap)
                     vbox.insertWidget(0, icon_label)
                     proxy_widget = QGraphicsProxyWidget()
                     proxy_widget.setWidget(widget)
-                    proxy_widget.setGeometry(QRectF(x * self.grid_size+10, y * self.grid_size+10, self.grid_size-20, self.grid_size-20))
+                    proxy_widget.setGeometry(QRectF(x * self.grid_size+margin*3, y * self.grid_size+margin*3, self.grid_size-margin*6, self.grid_size-margin*6))
                     self.scene.addItem(proxy_widget)
                     icon_label.mousePressEvent = lambda event: self.build_pressed()
                     # icon_label.mouseDoubleClickEvent = lambda event: self.build_pressed()
@@ -107,13 +108,19 @@ class MapViewer(QGraphicsView):
                                self.viewport().height() - self.fixed_button.height()-10)
         
     def upgrade_clicked(self, x, y):
-        self.parent.buildings_layout_stack.setCurrentIndex(0)
-        self.parent.buildings_title.setText(f"Town Hall")
-        self.parent.buildings_info.setText(f"Plot: [{x}, {y}]")
-        self.parent.buildings_upgrade1.setText(f"Increase Level 1 --> 2")
+        try:
+            self.parent.buildings_layout_stack.setCurrentIndex(0)
+            self.parent.buildings_title.setText(f"Town Hall")
+            self.parent.buildings_info.setText(f"Plot: [{x}, {y}]")
+            self.parent.buildings_upgrade1.setText(f"Increase Level 1 --> 2")
+        except:
+            pass
 
     def build_pressed(self):
-        self.parent.buildings_layout_stack.setCurrentIndex(1)
+        try:
+            self.parent.buildings_layout_stack.setCurrentIndex(1)
+        except:
+            pass
         # self.parent.buildings_title.setText(f"Build New Structure")
         # self.parent.buildings_info.setText(f"Choose from the following:")
         # self.parent.buildings_upgrade1.setText(f"Tier 1 Miner")
@@ -150,22 +157,14 @@ class MapViewer(QGraphicsView):
         if visible_height > scene_height:
             visible_height = scene_height
 
-        max_zoom_out_scale = scene_height / visible_height
-        min_scale = max_zoom_out_scale
-        max_scale = 2.0
-
+        min_scale = visible_height / scene_height
         current_scale = self.transform().m11()
 
-        if event.angleDelta().y() > 0:  # Zoom in
+        if event.angleDelta().y() > 0 and current_scale < 0.75:
             self.scale(zoom_in_factor, zoom_in_factor)
-        elif event.angleDelta().y() < 0:  # Zoom out
+        elif event.angleDelta().y() < 0 and current_scale > 0.35:
             self.scale(zoom_out_factor, zoom_out_factor)
 
-        # if event.angleDelta().y() > 0 and current_scale * zoom_in_factor <= max_scale:  # Zoom in
-        #     self.scale(zoom_in_factor, zoom_in_factor)
-        # elif event.angleDelta().y() < 0 and current_scale * zoom_out_factor >= min_scale:  # Zoom out
-        #     self.scale(zoom_out_factor, zoom_out_factor)
-        
         event.accept()
 
     def set_background_image(self):
