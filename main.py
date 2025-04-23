@@ -342,6 +342,8 @@ class MainUI(QWidget):
         layout = QGridLayout()
         layout.setColumnStretch(0, 4)
         layout.setColumnStretch(1, 1)
+
+        self.map_viewer = MapViewer(parent=self)
         
         self.right_gb = QGroupBox()
         self.right_gb.setFixedWidth(400)
@@ -391,6 +393,7 @@ class MainUI(QWidget):
             cost_label = QLabel(f"Cost: {cost}")
             cost_label.setStyleSheet("font-size: 10px; color: #f7d68a")
             buy_button = QPushButton("Buy")
+            buy_button.clicked.connect(lambda _, name=name: self.map_viewer.buy_pressed(name))
 
             build_layout.addWidget(icon_label, row, 0, 1, 1)
             build_layout.addLayout(info_layout, row, 1, 1, 1)
@@ -413,8 +416,6 @@ class MainUI(QWidget):
         widget2 = QWidget()
         widget2.setLayout(build_layout)
         self.buildings_layout_stack.addWidget(widget2)
-
-        self.map_viewer = MapViewer(parent=self)
 
         layout.addWidget(self.map_viewer, 0, 0, 1, 1)
         layout.addWidget(self.right_gb, 0, 1, 1, 1)

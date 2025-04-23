@@ -16,20 +16,26 @@ class MapViewer(QGraphicsView):
             self.bg_filename = os.path.join(os.path.dirname(__file__), '..', bg_filename)
         except:
             pass
+        self.selected_coords_queue = [(0,0), (0,0)] # used to find prev coord
+        self.current_selected_coords = (0,0)
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.grid_size = 250  # Size of each grid cell
+        self.margin = int(self.grid_size / 10)
         self.dimensions = 10000
         self.scene.setSceneRect(0, 0, self.dimensions, self.dimensions)
-        self.add_clickable_objects()
+        self.load_clickable_objects_from_save()
         initial_zoom_factor = 0.45
         self.scale(initial_zoom_factor, initial_zoom_factor)
         if self.dimensions % 2 != 0:
             self.centerOn(self.dimensions/2, self.dimensions/2)
         else:
             self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
+
+        self.highlighted_item = None
+        self.highlight_selected_item(0, 0)
         self.setStyleSheet("QGraphicsView { border: none; }")
 
         # self.fixed_button = QPushButton("Toggle Grid", self)
@@ -42,89 +48,162 @@ class MapViewer(QGraphicsView):
         QTimer.singleShot(0, self.update_fixed_button_position)
         # self.set_background_image()
 
-    def add_clickable_objects(self):
-        visible_range = 1
-        space = int(self.dimensions/self.grid_size)
-        margin = int(self.grid_size/10)
+    def load_clickable_objects_from_save(self):
+        space = int(self.dimensions / self.grid_size)
+        building_locations = {}
+
+        for name, info in self.parent.resources.data["buildings"].items():
+            x = info["location"]["x"]
+            y = info["location"]["y"]
+            icon = info["icon"]
+            translated_coordinates = self.coordinate_translator(x, y)
+            building_locations[translated_coordinates] = (name, icon)
+
         for x in range(space):
             for y in range(space):
-                # Current Buildings
-                if x < int(space/2)+visible_range and x > int(space/2)-visible_range and y < int(space/2)+visible_range and y > int(space/2)-visible_range:
-                    # self.parent.resources
-                    widget = QWidget()
-                    widget.setStyleSheet('background: transparent')
-                    t = QGroupBox(widget)
-                    t.setFixedHeight(self.grid_size-margin)
-                    t.setFixedWidth(self.grid_size-margin-8)
-                    t.setStyleSheet('QGroupBox { border: 3px solid #f7d68a; padding:10px; background: transparent; border-radius: 14px;}')
-                    layout = QVBoxLayout()
-
-                    icon_label = QLabel()
-                    icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/town-hall.svg')).scaled(84, 84, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                    icon_label.setPixmap(icon_pixmap)
-                    
-                    layout.insertWidget(0, icon_label)
-                    label = QLabel(f"Antenna")
-                    label.setStyleSheet('font-size: 32px')
-                    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    button = QPushButton('Amplitude')
-                    button.setStyleSheet('font-size: 24px; background: #1e1e1e; border: 3px solid #8AB4F7; border-radius: 14px;')
-                    button.setCursor(Qt.CursorShape.PointingHandCursor)
-                    layout.addWidget(label)
-                    layout.addWidget(button)
-                    t.setLayout(layout)
-
-                    button.clicked.connect(lambda _, x=x, y=y: self.upgrade_clicked(x, y))
-
-                    proxy_widget = QGraphicsProxyWidget()
-                    proxy_widget.setWidget(widget)
-                    proxy_widget.setGeometry(QRectF(x * self.grid_size + margin/2, y * self.grid_size + margin/2, self.grid_size-margin, self.grid_size-margin))
-                    self.scene.addItem(proxy_widget)
-                # No building
-                # elif x < int(space/2)+(visible_range+1) and x > int(space/2)-(visible_range+1) and y < int(space/2)+(visible_range+1) and y > int(space/2)-(visible_range+1):
+                building_data = building_locations.get((x, y))
+                if building_data:
+                    building_name, icon = building_data
+                    self.create_building(x, y, building_name, icon)
                 else:
-                    widget = QWidget()
-                    # widget.setStyleSheet('background: red')
-                    vbox = QVBoxLayout(widget)
-                    icon_label = QLabel()
-                    icon_label.setStyleSheet("background: #1e1e1e")
-                    icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                    icon_label.setPixmap(icon_pixmap)
-                    vbox.insertWidget(0, icon_label)
-                    proxy_widget = QGraphicsProxyWidget()
-                    proxy_widget.setWidget(widget)
-                    proxy_widget.setGeometry(QRectF(x * self.grid_size+margin*3, y * self.grid_size+margin*3, self.grid_size-margin*6, self.grid_size-margin*6))
-                    self.scene.addItem(proxy_widget)
-                    icon_label.mousePressEvent = lambda event: self.build_pressed()
-                    # icon_label.mouseDoubleClickEvent = lambda event: self.build_pressed()
-                # Not Visible
-                # else:
-                #     pass
-    
+                    self.create_empty_space(x, y)
+
+    def create_building(self, x, y, building_name, icon):
+        self.clear_area(x, y)
+
+        widget = QWidget()
+        widget.setStyleSheet('background: transparent')
+        t = QGroupBox(widget)
+        t.setFixedHeight(self.grid_size - self.margin)
+        t.setFixedWidth(self.grid_size - self.margin)
+        t.setStyleSheet('QGroupBox { border: 3px solid #f7d68a; padding:10px; background: transparent; border-radius: 14px;}')
+        layout = QVBoxLayout()
+
+        icon_label = QLabel()
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_pixmap = QPixmap(self.parent.resources.resource_path(icon)).scaled(84, 84, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        icon_label.setPixmap(icon_pixmap)
+
+        layout.insertWidget(0, icon_label)
+        label = QLabel(building_name)
+        label.setStyleSheet('font-size: 24px')
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        button = QPushButton('Upgrade')
+        button.setStyleSheet('font-size: 18px; background: #1e1e1e; border: 3px solid #8AB4F7; border-radius: 14px;')
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        layout.addWidget(label)
+        layout.addWidget(button)
+        t.setLayout(layout)
+
+        button.clicked.connect(lambda _, x=x, y=y: self.upgrade_clicked(x, y))
+
+        proxy_widget = QGraphicsProxyWidget()
+        proxy_widget.setWidget(widget)
+        proxy_widget.setGeometry(QRectF(x * self.grid_size + self.margin / 2,
+                                        y * self.grid_size + self.margin / 2,
+                                        self.grid_size - self.margin,
+                                        self.grid_size - self.margin))
+        self.scene.addItem(proxy_widget)
+
+    def create_empty_space(self, x, y):
+        self.clear_area(x, y)
+
+        widget = QWidget()
+        vbox = QVBoxLayout(widget)
+        icon_label = QLabel()
+        icon_label.setStyleSheet("background: #1e1e1e")
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        icon_label.setPixmap(icon_pixmap)
+        vbox.insertWidget(0, icon_label)
+
+        proxy_widget = QGraphicsProxyWidget()
+        proxy_widget.setWidget(widget)
+        proxy_widget.setGeometry(QRectF(x * self.grid_size + self.margin * 3, y * self.grid_size + self.margin * 3, self.grid_size - self.margin * 6, self.grid_size - self.margin * 6))
+        self.scene.addItem(proxy_widget)
+
+        icon_label.mousePressEvent = lambda _, x=x, y=y: self.build_pressed(x, y)
+
+    def coordinate_translator(self, x, y, reverse=False):
+        space = int(self.dimensions / self.grid_size)
+        center = int(space / 2)
+        if not reverse:
+            new_x = x + center
+            new_y = center - y
+        else:
+            new_x = x - center
+            new_y = center - y
+        return new_x, new_y
+
+    def is_in_visible_range(self, x, y):
+        visible_range = 2
+        space = int(self.dimensions / self.grid_size)
+        center = int(space / 2)
+        return center - visible_range < x < center + visible_range and center - visible_range < y < center + visible_range
+
     def update_fixed_button_position(self):
         self.fixed_button.move(self.viewport().width() - self.fixed_button.width() -10, 
                                self.viewport().height() - self.fixed_button.height()-10)
         
+    def clear_area(self, x, y):
+        rect = QRectF(
+            x * self.grid_size + self.margin / 2, 
+            y * self.grid_size + self.margin / 2, 
+            self.grid_size - self.margin, 
+            self.grid_size - self.margin
+        )
+        items_to_remove = self.scene.items(rect)
+        for item in items_to_remove:
+            self.scene.removeItem(item)
+    
+    def highlight_selected_item(self, x, y):
+        x, y = self.coordinate_translator(self.current_selected_coords[0], self.current_selected_coords[1])
+
+        if self.highlighted_item is not None:
+            if self.highlighted_item.scene() is self.scene:
+                self.scene.removeItem(self.highlighted_item)
+            self.highlighted_item = None
+
+        widget = QWidget()
+        widget.setStyleSheet('background: transparent')
+
+        t = QGroupBox(widget)
+        t.setFixedHeight(self.grid_size - self.margin)
+        t.setFixedWidth(self.grid_size - self.margin)
+        t.setStyleSheet('QGroupBox { border: 3px solid #8AB4F7; padding: 10px; background: transparent; border-radius: 14px;}')
+
+        proxy_widget = QGraphicsProxyWidget()
+        proxy_widget.setWidget(widget)
+        proxy_widget.setGeometry(QRectF(
+            x * self.grid_size + self.margin / 2,
+            y * self.grid_size + self.margin / 2,
+            self.grid_size - self.margin,
+            self.grid_size - self.margin
+        ))
+
+        self.highlighted_item = proxy_widget
+        self.scene.addItem(proxy_widget)
+
     def upgrade_clicked(self, x, y):
-        try:
+        self.current_selected_coords = self.coordinate_translator(x, y, True)
+        if self.parent.buildings_layout_stack.currentIndex != 0:
             self.parent.buildings_layout_stack.setCurrentIndex(0)
             self.parent.buildings_title.setText(f"Town Hall")
             self.parent.buildings_info.setText(f"Plot: [{x}, {y}]")
             self.parent.buildings_upgrade1.setText(f"Increase Level 1 --> 2")
-        except:
-            pass
+        self.highlight_selected_item(x, y)
 
-    def build_pressed(self):
-        try:
+    def build_pressed(self, x, y):
+        self.current_selected_coords = self.coordinate_translator(x, y, True)
+        if self.parent.buildings_layout_stack.currentIndex != 1:
             self.parent.buildings_layout_stack.setCurrentIndex(1)
-        except:
-            pass
-        # self.parent.buildings_title.setText(f"Build New Structure")
-        # self.parent.buildings_info.setText(f"Choose from the following:")
-        # self.parent.buildings_upgrade1.setText(f"Tier 1 Miner")
+        self.highlight_selected_item(x, y)
 
+    def buy_pressed(self, name):
+        x, y = self.coordinate_translator(self.current_selected_coords[0], self.current_selected_coords[1])
+        self.create_building(x, y, name, 'assets/icons/town-hall.svg')
+        self.parent.buildings_layout_stack.setCurrentIndex(0)
+    
     def toggle_grid(self):
         """Toggle grid visibility."""
         if hasattr(self, 'grid_visible') and self.grid_visible:

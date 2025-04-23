@@ -54,30 +54,29 @@ class ResourceManager:
                     "level": 1,
                     "internal_upgrade_1": 0,
                     "location" : {
-                        "x" : 10,
-                        "y" : 10
-                    }
+                        "x" : 0,
+                        "y" : 0
+                    },
+                    "icon": 'assets/icons/town-hall.svg'
                 },
-                # "lumbermill": {
-                #     "level": 0,
-                #     "internal_upgrade_1": 0
-                # },
-                # "recruiting_hall": {
-                #     "level": 0,
-                #     "internal_upgrade_1": 0
-                # },
-                # "mines": {
-                #     "level": 0,
-                #     "internal_upgrade_1": 0
-                # },
-                # "merchants_guild": {
-                #     "level": 0,
-                #     "internal_upgrade_1": 0
-                # },
-                # "army_base": {
-                #     "level": 0,
-                #     "internal_upgrade_1": 0
-                # }
+                "Miner": {
+                    "level": 1,
+                    "internal_upgrade_1": 0,
+                    "location": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "icon": 'assets/icons/coin.svg'
+                },
+                "Lumberjack": {
+                    "level": 1,
+                    "internal_upgrade_1": 0,
+                    "location": {
+                        "x": 0,
+                        "y": 1
+                    },
+                    "icon": 'assets/icons/town-hall.svg'
+                }
             }
         }
 
