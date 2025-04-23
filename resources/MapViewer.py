@@ -226,7 +226,13 @@ class MapViewer(QGraphicsView):
         else:
             self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event, limited_zoom=True):
+        if not limited_zoom:
+            zoom_factor = 1.15 if event.angleDelta().y() > 0 else (1 / 1.15)
+            self.scale(zoom_factor, zoom_factor)
+            event.accept()
+            return
+        
         zoom_in_factor = 1.15
         zoom_out_factor = 1 / zoom_in_factor
 
