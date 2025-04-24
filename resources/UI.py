@@ -1,0 +1,576 @@
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+
+from functools import partial
+import json, os, sys, traceback, re, random
+import pyqtgraph as pg
+
+from resources.Space3D import Planet3DWidget
+from resources.ScrollableGrid import ScrollableGrid
+from resources.MapViewer import MapViewer
+from resources.Space3D import Planet3DWidget
+
+def createMainMenu(parent):
+    parent.backdrop_layout = QVBoxLayout()
+    parent.backdrop_layout.setContentsMargins(0, 0, 0, 0)
+    parent.backdrop_layout.setSpacing(0)
+
+    parent.this_widget = QWidget()
+    parent.this_widget.setLayout(parent.backdrop_layout)
+    parent.this_widget.setStyleSheet('background: transparent')
+
+    parent.planet_widget = Planet3DWidget()
+    parent.backdrop_layout.addWidget(parent.planet_widget)
+    parent.overlay_widget = create_overlay_layout(parent)
+
+    parent.stackedWidget.addWidget(parent.this_widget)
+
+def create_overlay_layout(parent):
+    # Overlay container
+    overlay_layout = QVBoxLayout()
+    overlay_layout.setContentsMargins(10, 10, 10, 10)
+    overlay_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    overlay_frame = QFrame()
+    overlay_frame.setStyleSheet("""
+        QFrame {
+            background-color: rgba(0, 0, 0, 0);  /* Semi-transparent black */
+            border-radius: 10px;
+        }
+    """)
+    overlay_frame.setFixedWidth(300)  # Set a fixed width for the overlay
+
+    overlay_content_layout = QVBoxLayout()
+    overlay_content_layout.setContentsMargins(10, 10, 10, 10)
+    overlay_content_layout.setSpacing(10)
+
+    overlay_label = QLabel("Space Simulator")
+    overlay_label.setStyleSheet("color: white; font-size: 32px;")
+    overlay_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    new_game_button = QPushButton("New Game")
+    new_game_button.setStyleSheet("""
+        QPushButton {
+            background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            color: white;  /* Text color */
+        }
+        QPushButton:hover {
+            background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+        }
+    """)
+    new_game_button.clicked.connect(parent.newGamePressed)
+
+    load_game_button = QPushButton("Load Game")
+    load_game_button.setStyleSheet("""
+        QPushButton {
+            background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            color: white;  /* Text color */
+        }
+        QPushButton:hover {
+            background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+        }
+    """)
+    load_game_button.clicked.connect(parent.loadGamePressed)
+
+    settings_button = QPushButton("Settings")
+    settings_button.setStyleSheet("""
+        QPushButton {
+            background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            color: white;  /* Text color */
+        }
+        QPushButton:hover {
+            background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+        }
+    """)
+
+    exit_button = QPushButton("Quit Game")
+    exit_button.setStyleSheet("""
+        QPushButton {
+            background-color: rgba(255, 255, 255, 10);  /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 80);  /* Light border for the glass effect */
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            color: white;  /* Text color */
+        }
+        QPushButton:hover {
+            background-color: rgba(155, 155, 255, 20);  /* Slightly brighter on hover */
+        }
+    """)
+
+    overlay_content_layout = QVBoxLayout()
+    overlay_content_layout.setContentsMargins(10, 10, 10, 10)
+    overlay_content_layout.setSpacing(10)
+
+    overlay_content_layout.addWidget(overlay_label)
+    overlay_content_layout.addStretch(1)
+    overlay_content_layout.addWidget(new_game_button)
+    overlay_content_layout.addWidget(load_game_button)
+    overlay_content_layout.addWidget(settings_button)
+    overlay_content_layout.addWidget(exit_button)
+    overlay_content_layout.addStretch()
+
+    overlay_frame.setLayout(overlay_content_layout)
+    overlay_layout.addWidget(overlay_frame)
+
+    overlay_widget = QWidget(parent.this_widget)
+    overlay_widget.setLayout(overlay_layout)
+    overlay_widget.setGeometry(110, parent.height()-400, 300, 500)  # Initial position
+    overlay_widget.show()
+
+    return overlay_widget
+
+def createHomePage(parent):
+    home_page = QGridLayout()
+    home_page.setContentsMargins(0, 0, 0, 0)
+    parent.tabWidget = QTabWidget()
+    parent.tabWidget.setStyleSheet(f"""
+        QTabWidget::pane {{
+            border: 0;
+            border-radius: 0px;
+            border-top: 1px solid #1e1e1e;
+            margin: 0px;
+            }}
+    """)
+    parent.galaxy_tab = QWidget()
+    parent.buildings_tab = QWidget()
+    parent.tab2 = QWidget()
+    parent.tab3 = QWidget()
+    parent.tab4 = QWidget()
+    tabIndex0 = parent.tabWidget.addTab(parent.galaxy_tab, "Galaxy")
+    tabIndex1 = parent.tabWidget.addTab(parent.buildings_tab, "Buildings")
+    tabIndex2 = parent.tabWidget.addTab(parent.tab2, "Research")
+    tabIndex3 = parent.tabWidget.addTab(parent.tab3, "Graphs")
+    tabIndex4 = parent.tabWidget.addTab(parent.tab4, "Settings")
+    parent.tabWidget.setTabIcon(tabIndex0, QIcon(parent.resources.resource_path("assets/home.png")))
+    parent.tabWidget.setTabIcon(tabIndex1, QIcon(parent.resources.resource_path("assets/home.png")))
+    parent.tabWidget.setTabIcon(tabIndex2, QIcon(parent.resources.resource_path("assets/list-check.png")))
+    parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/graph-up.png")))
+    parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/graph-up.png")))
+    parent.tabWidget.setTabIcon(tabIndex4, QIcon(parent.resources.resource_path("assets/gear.png")))
+    parent.tabWidget.setIconSize(QSize(32, 32))
+
+    parent.galaxy_tab.setLayout(galaxy_ui(parent))
+    parent.buildings_tab.setLayout(buildings_ui2(parent))
+    parent.tab2.setLayout(ui2(parent))
+    parent.tab3.setLayout(ui3(parent))
+    parent.tab4.setLayout(ui_settings(parent))
+    parent.tabWidget.currentChanged.connect(parent.tab_changed)
+
+    # resource_bar = QGroupBox()
+    # resource_bar.setObjectName("b1")
+    # resource_bar.setStyleSheet('QWidget#b1 {background-color: #161718; background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #161718, stop:0.5 #1f2022, stop:1 #0e0e0f); font-size: 18px; font-weight: bold; padding: 10px; border-radius: 10px; border: 1px solid #f7d68a; margin: 10px; }')
+    
+    h = QHBoxLayout()
+
+    def create_resource_group(label_text, label_var, label_rate):
+        group_box = QGroupBox(label_text)
+        group_box.setStyleSheet('font-size: 14px; margin-left:10px; background: transparent')
+        layout = QHBoxLayout()
+        
+        # resource_label = QLabel(label_text)
+        # resource_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # layout.addWidget(resource_label)
+        
+        label_var.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(label_var)
+        
+        label_rate.setAlignment(Qt.AlignmentFlag.AlignRight)
+        label_rate.setStyleSheet(f"color: {parent.resources.colors['light-text']}")
+        layout.addWidget(label_rate)
+        
+        group_box.setLayout(layout)
+        return group_box
+
+    resource_labels = {}
+    resource_rate_labels = {}
+
+    for resource, amount in parent.resources.data['resources'].items():
+        if amount > 0:
+            resource_labels[resource] = QLabel(str(amount))
+            resource_rate_labels[resource] = QLabel(f"{parent.resources.data['resource_rates'].get(resource, 0)}/s")
+
+    resource_groups = {}
+
+    for resource in resource_labels:
+        resource_groups[resource] = create_resource_group(f"{resource.capitalize()}:", resource_labels[resource], resource_rate_labels[resource])
+        h.addWidget(resource_groups[resource])
+
+    # home_page.addWidget(resource_bar, 0, 0, 1, 4)
+    home_page.addLayout(h, 0, 0, 1, 4)
+    home_page.addWidget(parent.tabWidget, 1, 0, 1, 4)
+    home_page.setRowStretch(0,0)
+    home_page.setRowStretch(1,1)
+
+    home_page_widget = QWidget()
+    home_page_widget.setLayout(home_page)
+    parent.stackedWidget.addWidget(home_page_widget)
+
+def galaxy_ui(parent):
+    backdrop_layout = QVBoxLayout()
+    backdrop_layout.setContentsMargins(0, 0, 0, 0)
+    backdrop_layout.setSpacing(0)
+
+    parent.planet_widget = Planet3DWidget()
+    backdrop_layout.addWidget(parent.planet_widget)
+    return backdrop_layout
+    
+def buildings_ui(parent):
+    buildings_layout = QVBoxLayout()
+    buildings_layout.setContentsMargins(0, 0, 0, 0)
+    parent.scroll_area = ScrollableGrid(bg_filename=parent.resources.resource_path("assets/planet1.jpg"), parent=parent)
+    scroll_area_widget = QWidget()
+    grid_layout = QGridLayout(scroll_area_widget)
+    # grid_layout.setSpacing(0)
+    grid_layout.setHorizontalSpacing(20)
+    grid_layout.setVerticalSpacing(10)
+
+    for i in range(21):
+        for j in range(21):
+            t = QGroupBox()
+            t.setFixedHeight(100)
+            t.setFixedWidth(100)
+            v = QVBoxLayout()
+            building_found = False
+            for building, details in parent.resources.data['buildings'].items():
+                # print(building,':',details)
+                if details['location']['x'] == i and details['location']['y'] == j:
+                    t.setStyleSheet('QWidget#b1 { border: 1px solid #f7d68a; padding:10px; background: #1e1e1e}')
+                    label = QLabel(building)
+                    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    v.addWidget(label)
+                    button = QPushButton(f'Upgrade', scroll_area_widget)
+                    v.addWidget(button)
+                    building_found = True
+                    break
+            if not building_found:
+                t.setStyleSheet('QWidget#b1 { border: none; padding:10px;}')
+                button = QPushButton(f'Build', scroll_area_widget)
+                button.setStyleSheet(f"border: none; background: transparent; color: {parent.resources.colors['light-text']}")
+                v.addWidget(button)
+            t.setLayout(v)
+            grid_layout.addWidget(t, i, j)
+
+    parent.scroll_area.setWidget(scroll_area_widget)
+    buildings_layout.addWidget(parent.scroll_area)
+    
+    QTimer.singleShot(0, parent.centerScrollArea)
+    return buildings_layout
+
+def buildings_ui2(parent):
+    layout = QGridLayout()
+    layout.setColumnStretch(0, 4)
+    layout.setColumnStretch(1, 1)
+
+    parent.map_viewer = MapViewer(parent=parent) # Setup takes a few seconds
+    
+    parent.right_gb = QGroupBox()
+    parent.right_gb.setFixedWidth(400)
+    parent.right_gb.setStyleSheet('''QGroupBox {
+                            background: transparent;
+                            font-size: 18px;
+                            font-weight: bold;
+                            padding: 0px;
+                            border-radius: 10px;
+                            border: 1px solid #1e1e1e;
+                            margin: 0px;
+                        }''')
+
+    parent.buildings_layout_stack = QStackedWidget(parent.right_gb)
+    tmp = QGridLayout(parent.right_gb)
+    tmp.addWidget(parent.buildings_layout_stack)
+
+    upgrade_layout = QGridLayout()
+    parent.buildings_title = QLabel()
+    parent.buildings_title.setStyleSheet("font-size: 22px; font-weight: bold")
+    parent.buildings_info = QLabel("Select a plot")
+    parent.buildings_upgrade1 = QPushButton("")
+    upgrade_layout.addWidget(parent.buildings_title, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+    upgrade_layout.addWidget(parent.buildings_info, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+    upgrade_layout.addWidget(parent.buildings_upgrade1, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+    widget1 = QWidget()
+    widget1.setLayout(upgrade_layout)
+    parent.buildings_layout_stack.addWidget(widget1)
+
+    build_layout = QGridLayout()
+    parent.buildings_title2 = QLabel("Build Menu")
+    parent.buildings_title2.setStyleSheet("font-size: 22px; font-weight: bold")
+
+    def create_building_widget(name, description, cost, icon_path, row):
+        icon_label = QLabel()
+        icon_label.setPixmap(QPixmap(icon_path).scaled(16, 16, Qt.AspectRatioMode.KeepAspectRatio))
+
+        info_layout = QVBoxLayout()
+        name_label = QLabel(name)
+        name_label.setStyleSheet("font-size: 14px; font-weight: bold")
+        description_label = QLabel(description)
+        description_label.setStyleSheet("font-size: 10px; color: #818181")
+        description_label.setWordWrap(True)
+        info_layout.addWidget(name_label)
+        info_layout.addWidget(description_label)
+
+        cost_label = QLabel(f"Cost: {cost}")
+        cost_label.setStyleSheet("font-size: 10px; color: #f7d68a")
+        buy_button = QPushButton("Buy")
+        buy_button.clicked.connect(lambda _, name=name: parent.map_viewer.buy_pressed(name))
+
+        build_layout.addWidget(icon_label, row, 0, 1, 1)
+        build_layout.addLayout(info_layout, row, 1, 1, 1)
+        build_layout.addWidget(cost_label, row, 2, 1, 1)
+        build_layout.addWidget(buy_button, row, 3, 1, 1)
+    
+    # build_layout.addWidget(parent.buildings_title2, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+    # create_building_widget("Miner", "Extracts minerals from the ground.", "100 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 1)
+    # create_building_widget("Carbon Refinery", "Refines Carb", "150 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 2)
+    # create_building_widget("Merchant's Guild", "Trades resources with other planets.", "200 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 3)
+    # create_building_widget("Housing", "Provides shelter for people.", "50 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 4)
+    # create_building_widget("Smelter", "Assembles complex structures.", "250 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 5)
+    # create_building_widget("Assembler", "Assembles complex structures.", "300 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 6)
+    # create_building_widget("Manufacturer", "Produces goods for trade.", "400 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 7)
+
+    build_layout.addWidget(parent.buildings_title2, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+
+    buildings_data = parent.resources.game_data["buildings"]
+    for index, (building_name, building_info) in enumerate(buildings_data.items(), start=1):
+        if building_name != "Base":
+            icon_path = parent.resources.resource_path(building_info["icon"])
+            cost = f"{building_info['build_cost']['gold']} Gold"
+            create_building_widget(building_name, building_info["description"], cost, icon_path, index)
+
+    build_layout.setColumnStretch(0, 1)
+    build_layout.setColumnStretch(1, 3)
+    build_layout.setColumnStretch(2, 3)
+    build_layout.setColumnStretch(3, 3)
+    build_layout.setRowStretch(0, 1)
+
+    widget2 = QWidget()
+    widget2.setLayout(build_layout)
+    parent.buildings_layout_stack.addWidget(widget2)
+
+    layout.addWidget(parent.map_viewer, 0, 0, 1, 1)
+    layout.addWidget(parent.right_gb, 0, 1, 1, 1)
+    return layout
+
+def ui2(parent):
+    layout = QVBoxLayout()
+    
+    parent.progressBars = [QProgressBar(parent) for _ in range(5)]
+
+    for index, progressBar in enumerate(parent.progressBars):
+        progressBar.setRange(0, 100)
+        progressBar.setValue(0)
+        layout.addWidget(progressBar)
+    
+    parent.timers = [QTimer(parent) for _ in range(5)]
+    speeds = [50, 200, 300, 400, 500]
+
+    for index, timer in enumerate(parent.timers):
+        timer.timeout.connect(partial(parent.updateProgressBar, index))
+        timer.start(speeds[index])
+
+    return layout
+
+def ui3(parent):
+    layout = QGridLayout()
+    parent.graphWidget = pg.PlotWidget()
+    parent.graphWidget.setBackground('#202124')
+    parent.graphWidget.getAxis('left').setStyle(showValues=False)
+    parent.graphWidget.getAxis('bottom').setStyle(showValues=False)
+    label = QLabel("People/Gold/Resources over Time")
+    label.setStyleSheet("font-size: 32px;")
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    layout.addWidget(label, 0, 0, 1, 2)
+    layout.addWidget(parent.graphWidget, 1, 0, 1, 2)
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 3)
+    
+    parent.x = list(range(200))
+    parent.y = [random.uniform(0, 50) for _ in range(200)]
+    parent.y2 = [random.uniform(25, 75) for _ in range(200)]
+    parent.y3 = [random.uniform(50, 100) for _ in range(200)]
+
+    parent.data_line = parent.graphWidget.plot(parent.x, parent.y, pen=pg.mkPen(color='#8AB4F7', width=2), antialias=True)
+    parent.data_line2 = parent.graphWidget.plot(parent.x, parent.y2, pen=pg.mkPen(color='#f78af1', width=2), antialias=True)
+    parent.data_line3 = parent.graphWidget.plot(parent.x, parent.y3, pen=pg.mkPen(color='#f7c28a', width=2), antialias=True)
+
+    def update_plot_data():
+        parent.x = parent.x[1:]
+        parent.x.append(parent.x[-1] + 1)
+
+        parent.y = parent.y[1:]
+        parent.y.append(random.uniform(0, 50))
+
+        parent.y2 = parent.y2[1:]
+        parent.y2.append(random.uniform(25, 75))
+
+        parent.y3 = parent.y3[1:]
+        parent.y3.append(random.uniform(50, 100))
+
+        parent.data_line.setData(parent.x, parent.y)
+        parent.data_line2.setData(parent.x, parent.y2)
+        parent.data_line3.setData(parent.x, parent.y3)
+
+    parent.timer = QTimer()
+    parent.timer.setInterval(500)
+    parent.timer.timeout.connect(update_plot_data)
+    parent.timer.start()
+    return layout
+
+def ui_settings(parent):
+    layout = QVBoxLayout()
+
+    generalSettings = QGroupBox("General Settings")
+    generalLayout = QGridLayout()
+    generalSettings.setLayout(generalLayout)
+    generalSettings.setStyleSheet("QGroupBox { border: 1px solid #f7918a; padding: 10px; font-size: 18px}")
+
+    generalLayout.addWidget(QLabel('Test Timeout (s):'), 1, 0)
+    test_timeout = QSpinBox()
+    test_timeout.setRange(1, 3600)
+    test_timeout.setValue(60)
+    generalLayout.addWidget(test_timeout, 1, 1)
+
+    generalLayout.addWidget(QLabel('Retry Count:'), 1, 2)
+    retry_count = QSpinBox()
+    retry_count.setRange(0, 10)
+    retry_count.setValue(3)
+    generalLayout.addWidget(retry_count, 1, 3)
+
+    generalLayout.addWidget(QLabel('Log Level:'), 2, 0)
+    log_level = QComboBox()
+    log_level.addItems(['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+    log_level.setCurrentText('INFO')
+    generalLayout.addWidget(log_level, 2, 1)
+
+    generalLayout.addWidget(QLabel('Save Logs to File:'), 2, 2)
+    save_logs = QCheckBox()
+    save_logs.setChecked(True)
+    generalLayout.addWidget(save_logs, 2, 3)
+
+    generalLayout.addWidget(QLabel('Output Directory:'), 3, 0)
+    parent.output_dir = QLineEdit()
+    parent.output_dir.setText(os.getcwd())
+    generalLayout.addWidget(parent.output_dir, 3, 1, 1, 1)
+
+    # upload_button = QPushButton('Browse')
+    # upload_button.setStyleSheet('padding: 5px;')
+    # generalLayout.addWidget(upload_button, 3, 2, 1, 2)
+    # upload_button.clicked.connect(parent.browse)
+    # layout.addWidget(generalSettings)
+
+    label = QLabel("Adjust Font Size")
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    # generalLayout.addWidget(label, 4, 0, 1, 1)
+
+    parent.slider = QSlider(Qt.Orientation.Horizontal)
+    parent.slider.setMinimum(12)
+    parent.slider.setMaximum(32)
+    parent.slider.setValue(18)
+    parent.slider.valueChanged.connect(parent.adjust_font_size)
+    # generalLayout.addWidget(parent.slider, 4, 1, 1, 2)
+
+    parent.font_label = QLabel("18px")
+    # generalLayout.addWidget(parent.font_label, 4, 3, 1, 1)
+
+    displaySettings = QGroupBox("Display Settings")
+    displayLayout = QGridLayout()
+    displaySettings.setLayout(displayLayout)
+    displaySettings.setStyleSheet("QGroupBox { border: 1px solid #f7c28a; padding: 10px; font-size: 18px}")
+
+    displayLayout.addWidget(QLabel('Resolution:'), 1, 0)
+    parent.resolution_select = QComboBox()
+    resolution_options = ['1080x720', '1280x720', '1366x768', '1600x900', '1920x1080', '2560x1440', '3840x2160']
+    parent.resolution_select.addItems(resolution_options)
+    parent.resolution_select.setCurrentText('1080x720')
+    parent.resolution_select.currentTextChanged.connect(parent.adjust_resolution)
+    displayLayout.addWidget(parent.resolution_select, 1, 1, 1, 2)
+
+    displayLayout.addWidget(QLabel('Fullscreen:'), 2, 0)
+    parent.fullscreen_checkbox = QCheckBox()
+    parent.fullscreen_checkbox.setChecked(False)
+    parent.fullscreen_checkbox.stateChanged.connect(parent.toggle_fullscreen)
+    displayLayout.addWidget(parent.fullscreen_checkbox, 2, 1, 1, 2, Qt.AlignmentFlag.AlignLeft)
+
+    layout.addWidget(displaySettings)
+
+    testSettings = QGroupBox("Test Settings")
+    testLayout = QGridLayout()
+    testSettings.setLayout(testLayout)
+    testSettings.setStyleSheet("QGroupBox { border: 1px solid #f6f78a; padding: 10px; font-size: 18px}")
+
+    testLayout.addWidget(QLabel('OneFactory Automatic Upload:'), 1, 0)
+    one_factory = QCheckBox()
+    one_factory.setChecked(False)
+    testLayout.addWidget(one_factory, 1, 1)
+
+    testLayout.addWidget(QLabel('Max Concurrent Tests:'), 1, 2)
+    max_concurrent_tests = QSpinBox()
+    max_concurrent_tests.setRange(1, 20)
+    max_concurrent_tests.setValue(5)
+    testLayout.addWidget(max_concurrent_tests, 2, 3)
+
+    testLayout.addWidget(QLabel('Test Priority Level:'), 2, 0)
+    test_priority = QComboBox()
+    test_priority.addItems(['Low', 'Medium', 'High'])
+    test_priority.setCurrentText('Medium')
+    testLayout.addWidget(test_priority, 2, 1)
+
+    testLayout.addWidget(QLabel('Save Test Report:'), 2, 2)
+    save_test_report = QCheckBox()
+    save_test_report.setChecked(True)
+    testLayout.addWidget(save_test_report, 1, 3)
+
+    testLayout.addWidget(QLabel('Test Script Path:'), 3, 0)
+    test_script_path = QLineEdit()
+    test_script_path.setText('/path/to/test/script')
+    testLayout.addWidget(test_script_path, 3, 1, 1, 3)
+
+    layout.addWidget(testSettings)
+
+    proxySettings = QGroupBox("Proxy Settings")
+    proxyLayout = QGridLayout()
+    proxySettings.setLayout(proxyLayout)
+    proxySettings.setStyleSheet("QGroupBox { border: 1px solid #8af7b4; padding: 10px; font-size: 18px}")
+
+    proxyLayout.addWidget(QLabel('Use Proxy Server:'), 1, 0)
+    use_proxy = QCheckBox()
+    use_proxy.setChecked(False)
+    proxyLayout.addWidget(use_proxy, 1, 1)
+
+    proxyLayout.addWidget(QLabel('Proxy Server Address:'), 2, 0)
+    proxy_address = QLineEdit()
+    proxy_address.setText('')
+    proxyLayout.addWidget(proxy_address, 2, 1, 1, 3)
+
+    layout.addWidget(proxySettings)
+
+    debugSettings = QGroupBox("Debug Settings")
+    debugLayout = QGridLayout()
+    debugSettings.setLayout(debugLayout)
+    debugSettings.setStyleSheet("QGroupBox { border: 1px solid #c58af7; padding: 10px; font-size: 18px}")
+
+    debugLayout.addWidget(QLabel('Enable Debug Mode:'), 1, 0)
+    enable_debug = QCheckBox()
+    enable_debug.setChecked(False)
+    debugLayout.addWidget(enable_debug, 1, 1)
+
+    layout.addWidget(debugSettings)
+
+    save_settings = QPushButton('Save Settings')
+    layout.addWidget(save_settings)
+    save_settings.setStyleSheet("background: #8AB4F7; border: 1px solid #8AB4F7; color: #202124")
+
+    return layout

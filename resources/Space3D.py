@@ -294,12 +294,12 @@ class Planet3DWidget(QOpenGLWidget):
         else:
             self.autopan_timer = QTimer(self)
             self.autopan_timer.timeout.connect(self.autopan)
-            self.autopan_timer.start(33)  # 30fps -> 1000ms/30fps = ~33ms per frame
+            self.autopan_timer.start(16)  # 30fps -> 1000ms/30fps = ~33ms per frame
             self.lock_controls = True
 
     def autopan(self):
-        self.angle_y += 0.5
-        self.angle_x += 0.1
+        self.angle_y += 0.25
+        self.angle_x += 0.05
         self.update()
 # self.planet_widget = Planet3DWidget()
 

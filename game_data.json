@@ -1,0 +1,328 @@
+{
+    "buildings": {
+        "Base": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Base of operations",
+            "build_cost": {
+                "gold" : 0
+            },
+            "levels": {
+                "1": {
+                    "production_rate": 10,
+                    "upgrade_cost": 100
+                },
+                "2": {
+                    "production_rate": 15,
+                    "upgrade_cost": 200
+                },
+                "3": {
+                    "production_rate": 20,
+                    "upgrade_cost": 400
+                },
+                "4": {
+                    "production_rate": 30,
+                    "upgrade_cost": 800
+                },
+                "5": {
+                    "production_rate": 45,
+                    "upgrade_cost": 1600
+                },
+                "6": {
+                    "production_rate": 65,
+                    "upgrade_cost": 3200
+                },
+                "7": {
+                    "production_rate": 90,
+                    "upgrade_cost": 6400
+                },
+                "8": {
+                    "production_rate": 120,
+                    "upgrade_cost": 12800
+                },
+                "9": {
+                    "production_rate": 155,
+                    "upgrade_cost": 25600
+                },
+                "10": {
+                    "production_rate": 200,
+                    "upgrade_cost": 51200
+                }
+            }
+        },
+        "Miner": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Extracts minerals from the ground.",
+            "build_cost": {
+                "gold" : 0
+            },
+            "levels": {
+                "1": {
+                    "production_rate": 10,
+                    "upgrade_cost": 100
+                },
+                "2": {
+                    "production_rate": 15,
+                    "upgrade_cost": 200
+                },
+                "3": {
+                    "production_rate": 20,
+                    "upgrade_cost": 400
+                },
+                "4": {
+                    "production_rate": 30,
+                    "upgrade_cost": 800
+                },
+                "5": {
+                    "production_rate": 45,
+                    "upgrade_cost": 1600
+                },
+                "6": {
+                    "production_rate": 65,
+                    "upgrade_cost": 3200
+                },
+                "7": {
+                    "production_rate": 90,
+                    "upgrade_cost": 6400
+                },
+                "8": {
+                    "production_rate": 120,
+                    "upgrade_cost": 12800
+                },
+                "9": {
+                    "production_rate": 155,
+                    "upgrade_cost": 25600
+                },
+                "10": {
+                    "production_rate": 200,
+                    "upgrade_cost": 51200
+                }
+            }
+        },
+        "Refinery": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Processes raw carbon into usable building materials and components.",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "collection_rate": 5,
+                    "upgrade_cost": 150
+                },
+                "2": {
+                    "collection_rate": 10,
+                    "upgrade_cost": 300
+                },
+                "3": {
+                    "collection_rate": 18,
+                    "upgrade_cost": 600
+                },
+                "4": {
+                    "collection_rate": 30,
+                    "upgrade_cost": 1200
+                },
+                "5": {
+                    "collection_rate": 50,
+                    "upgrade_cost": 2400
+                },
+                "6": {
+                    "collection_rate": 80,
+                    "upgrade_cost": 4800
+                },
+                "7": {
+                    "collection_rate": 120,
+                    "upgrade_cost": 9600
+                },
+                "8": {
+                    "collection_rate": 170,
+                    "upgrade_cost": 19200
+                }
+            }
+        },
+        "Merchant's Guild": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Trades resources with other nearby civilizations",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "trade_bonus": 1.1,
+                    "upgrade_cost": 500
+                },
+                "2": {
+                    "trade_bonus": 1.25,
+                    "upgrade_cost": 1000
+                },
+                "3": {
+                    "trade_bonus": 1.4,
+                    "upgrade_cost": 2000
+                },
+                "4": {
+                    "trade_bonus": 1.6,
+                    "upgrade_cost": 4000
+                },
+                "5": {
+                    "trade_bonus": 1.8,
+                    "upgrade_cost": 8000
+                }
+            }
+        },
+        "Housing": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Provides shelter to house more people.",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "population_capacity": 50,
+                    "upgrade_cost": 250
+                },
+                "2": {
+                    "population_capacity": 100,
+                    "upgrade_cost": 500
+                },
+                "3": {
+                    "population_capacity": 175,
+                    "upgrade_cost": 1000
+                },
+                "4": {
+                    "population_capacity": 275,
+                    "upgrade_cost": 2000
+                },
+                "5": {
+                    "population_capacity": 400,
+                    "upgrade_cost": 4000
+                },
+                "6": {
+                    "population_capacity": 550,
+                    "upgrade_cost": 8000
+                },
+                "7": {
+                    "population_capacity": 725,
+                    "upgrade_cost": 16000
+                }
+            }
+        },
+        "Assembler": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Assembles complex structures and components.",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "efficiency": 1.05,
+                    "upgrade_cost": 300
+                },
+                "2": {
+                    "efficiency": 1.1,
+                    "upgrade_cost": 600
+                },
+                "3": {
+                    "efficiency": 1.2,
+                    "upgrade_cost": 1200
+                },
+                "4": {
+                    "efficiency": 1.35,
+                    "upgrade_cost": 2400
+                },
+                "5": {
+                    "efficiency": 1.5,
+                    "upgrade_cost": 4800
+                },
+                "6": {
+                    "efficiency": 1.7,
+                    "upgrade_cost": 9600
+                },
+                "7": {
+                    "efficiency": 1.9,
+                    "upgrade_cost": 19200
+                },
+                "8": {
+                    "efficiency": 2.15,
+                    "upgrade_cost": 38400
+                },
+                "9": {
+                    "efficiency": 2.4,
+                    "upgrade_cost": 76800
+                }
+            }
+        },
+        "Manufacturer": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Produces goods for trade.",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "production_capacity": 50,
+                    "upgrade_cost": 400
+                },
+                "2": {
+                    "production_capacity": 110,
+                    "upgrade_cost": 800
+                },
+                "3": {
+                    "production_capacity": 180,
+                    "upgrade_cost": 1600
+                },
+                "4": {
+                    "production_capacity": 260,
+                    "upgrade_cost": 3200
+                },
+                "5": {
+                    "production_capacity": 360,
+                    "upgrade_cost": 6400
+                },
+                "6": {
+                    "production_capacity": 480,
+                    "upgrade_cost": 12800
+                }
+            }
+        },
+        "Smelter": {
+            "icon": "assets/icons/home.svg",
+            "max_level": 10,
+            "description": "Refines ore into usable materials for construction and fabrication.",
+            "build_cost": {
+                "gold" : 100
+            },
+            "levels": {
+                "1": {
+                    "production_capacity": 50,
+                    "upgrade_cost": 400
+                },
+                "2": {
+                    "production_capacity": 110,
+                    "upgrade_cost": 800
+                },
+                "3": {
+                    "production_capacity": 180,
+                    "upgrade_cost": 1600
+                },
+                "4": {
+                    "production_capacity": 260,
+                    "upgrade_cost": 3200
+                },
+                "5": {
+                    "production_capacity": 360,
+                    "upgrade_cost": 6400
+                },
+                "6": {
+                    "production_capacity": 480,
+                    "upgrade_cost": 12800
+                }
+            }
+        }
+    }
+}

@@ -16,13 +16,12 @@ class MapViewer(QGraphicsView):
             self.bg_filename = os.path.join(os.path.dirname(__file__), '..', bg_filename)
         except:
             pass
-        self.selected_coords_queue = [(0,0), (0,0)] # used to find prev coord
         self.current_selected_coords = (0,0)
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
-        self.grid_size = 250  # Size of each grid cell
+        self.grid_size = 250 # 10000/250 (40x40 grid)
         self.margin = int(self.grid_size / 10)
         self.dimensions = 10000
         self.scene.setSceneRect(0, 0, self.dimensions, self.dimensions)
@@ -50,21 +49,14 @@ class MapViewer(QGraphicsView):
 
     def load_clickable_objects_from_save(self):
         space = int(self.dimensions / self.grid_size)
-        building_locations = {}
-
-        for name, info in self.parent.resources.data["buildings"].items():
-            x = info["location"]["x"]
-            y = info["location"]["y"]
-            icon = info["icon"]
-            translated_coordinates = self.coordinate_translator(x, y)
-            building_locations[translated_coordinates] = (name, icon)
 
         for x in range(space):
             for y in range(space):
-                building_data = building_locations.get((x, y))
+                building_data = self.parent.resources.building_grid[x,y]
                 if building_data:
-                    building_name, icon = building_data
-                    self.create_building(x, y, building_name, icon)
+                    name = building_data["name"]
+                    icon = self.parent.resources.game_data['buildings'][name]['icon']
+                    self.create_building(x, y, name, icon)
                 else:
                     self.create_empty_space(x, y)
 
@@ -124,17 +116,6 @@ class MapViewer(QGraphicsView):
 
         icon_label.mousePressEvent = lambda _, x=x, y=y: self.build_pressed(x, y)
 
-    def coordinate_translator(self, x, y, reverse=False):
-        space = int(self.dimensions / self.grid_size)
-        center = int(space / 2)
-        if not reverse:
-            new_x = x + center
-            new_y = center - y
-        else:
-            new_x = x - center
-            new_y = center - y
-        return new_x, new_y
-
     def is_in_visible_range(self, x, y):
         visible_range = 2
         space = int(self.dimensions / self.grid_size)
@@ -157,7 +138,6 @@ class MapViewer(QGraphicsView):
             self.scene.removeItem(item)
     
     def highlight_selected_item(self, x, y):
-        x, y = self.coordinate_translator(self.current_selected_coords[0], self.current_selected_coords[1])
 
         if self.highlighted_item is not None:
             if self.highlighted_item.scene() is self.scene:
@@ -185,23 +165,24 @@ class MapViewer(QGraphicsView):
         self.scene.addItem(proxy_widget)
 
     def upgrade_clicked(self, x, y):
-        self.current_selected_coords = self.coordinate_translator(x, y, True)
+        self.current_selected_coords = x, y
         if self.parent.buildings_layout_stack.currentIndex != 0:
             self.parent.buildings_layout_stack.setCurrentIndex(0)
-            self.parent.buildings_title.setText(f"Town Hall")
+            self.parent.buildings_title.setText(f"ooga")
             self.parent.buildings_info.setText(f"Plot: [{x}, {y}]")
             self.parent.buildings_upgrade1.setText(f"Increase Level 1 --> 2")
         self.highlight_selected_item(x, y)
 
     def build_pressed(self, x, y):
-        self.current_selected_coords = self.coordinate_translator(x, y, True)
+        self.current_selected_coords = x, y
         if self.parent.buildings_layout_stack.currentIndex != 1:
             self.parent.buildings_layout_stack.setCurrentIndex(1)
         self.highlight_selected_item(x, y)
 
     def buy_pressed(self, name):
-        x, y = self.coordinate_translator(self.current_selected_coords[0], self.current_selected_coords[1])
-        self.create_building(x, y, name, 'assets/icons/town-hall.svg')
+        x, y = self.current_selected_coords[0], self.current_selected_coords[1]
+        self.parent.resources.add_building(x, y, name)
+        self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
         self.parent.buildings_layout_stack.setCurrentIndex(0)
     
     def toggle_grid(self):

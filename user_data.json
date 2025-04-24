@@ -1,0 +1,94 @@
+{
+  "resources": {
+    "people": 1,
+    "gold": 100,
+    "carbon": 50,
+    "aluminum": 50,
+    "silicon": 50,
+    "iron": 0,
+    "hydrogen": 0,
+    "copper": 0,
+    "titanium": 0,
+    "lithium": 0,
+    "oxygen": 0
+  },
+  "resource_rates": {
+    "people": 0,
+    "gold": 0,
+    "carbon": 0,
+    "aluminum": 0,
+    "silicon": 0,
+    "iron": 0,
+    "hydrogen": 0,
+    "copper": 0,
+    "titanium": 0,
+    "lithium": 0,
+    "oxygen": 0
+  },
+  "workers": {
+    "civilian": {
+      "1": 1
+    },
+    "builders": {
+      "1": 0
+    },
+    "lumbermen": {
+      "1": 0
+    },
+    "miners": {
+      "1": 0
+    },
+    "merchants": {
+      "1": 0
+    },
+    "military": {
+      "1": 0
+    }
+  },
+  "buildings": {
+    "1": {
+      "name": "Base",
+      "level": 1,
+      "location": {
+        "x": 20,
+        "y": 20
+      }
+    },
+    "2": {
+      "name": "Housing",
+      "level": 1,
+      "location": {
+        "x": 21,
+        "y": 20
+      }
+    },
+    "3": {
+      "name": "Miner",
+      "level": 1,
+      "location": {
+        "x": 20,
+        "y": 21
+      }
+    },
+    "4": {
+      "name": "Base",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 22,
+        "y": 21
+      }
+    },
+    "5": {
+      "name": "Miner",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 22,
+        "y": 20
+      }
+    }
+  }
+}
