@@ -12,6 +12,7 @@ class MapViewer(QGraphicsView):
     def __init__(self, bg_filename=None, parent=None):
         super().__init__()
         self.parent = parent
+        self.planet_size = self.parent.resources.planet_size
         try:
             self.bg_filename = os.path.join(os.path.dirname(__file__), '..', bg_filename)
         except:
@@ -23,7 +24,7 @@ class MapViewer(QGraphicsView):
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.grid_size = 250 # 10000/250 (40x40 grid)
         self.margin = int(self.grid_size / 10)
-        self.dimensions = 10000
+        self.dimensions = 250 * self.planet_size
         self.scene.setSceneRect(0, 0, self.dimensions, self.dimensions)
         self.load_clickable_objects_from_save()
         initial_zoom_factor = 0.45
@@ -34,7 +35,7 @@ class MapViewer(QGraphicsView):
             self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
 
         self.highlighted_item = None
-        self.highlight_selected_item(0, 0)
+        self.highlight_selected_item(int(self.planet_size/2), int(self.planet_size/2))
         self.setStyleSheet("QGraphicsView { border: none; }")
 
         # self.fixed_button = QPushButton("Toggle Grid", self)
@@ -87,7 +88,9 @@ class MapViewer(QGraphicsView):
         layout.addWidget(button)
         t.setLayout(layout)
 
-        button.clicked.connect(lambda _, x=x, y=y: self.upgrade_clicked(x, y))
+        # button.clicked.connect(lambda _, x=x, y=y: self.upgrade_clicked(x, y))
+        t.mouseDoubleClickEvent = lambda event, x=x, y=y: self.widget_double_clicked(event, x, y)
+        t.mousePressEvent = lambda event, x=x, y=y: self.upgrade_clicked(event, x, y)
 
         proxy_widget = QGraphicsProxyWidget()
         proxy_widget.setWidget(widget)
@@ -164,26 +167,32 @@ class MapViewer(QGraphicsView):
         self.highlighted_item = proxy_widget
         self.scene.addItem(proxy_widget)
 
-    def upgrade_clicked(self, x, y):
+    def upgrade_clicked(self, event, x, y):
+        building_data = self.parent.resources.building_grid[x,y]
         self.current_selected_coords = x, y
-        if self.parent.buildings_layout_stack.currentIndex != 0:
-            self.parent.buildings_layout_stack.setCurrentIndex(0)
-            self.parent.buildings_title.setText(f"ooga")
+        if self.parent.building_info_right_panel.currentIndex != 0:
+            self.parent.building_info_right_panel.setCurrentIndex(0)
+            self.parent.buildings_title.setText(building_data["name"])
             self.parent.buildings_info.setText(f"Plot: [{x}, {y}]")
-            self.parent.buildings_upgrade1.setText(f"Increase Level 1 --> 2")
+            self.parent.buildings_upgrade1.setText(f"Increase Level {building_data['level']} --> {int(building_data['level']) + 1}")
+            self.parent.buildings_cost.setText(f"Cost: [{building_data['level']}]")
+
         self.highlight_selected_item(x, y)
+
+    def widget_double_clicked(self, event, x, y):
+        self.parent.buildings_view_switch.setCurrentIndex(1)
 
     def build_pressed(self, x, y):
         self.current_selected_coords = x, y
-        if self.parent.buildings_layout_stack.currentIndex != 1:
-            self.parent.buildings_layout_stack.setCurrentIndex(1)
+        if self.parent.building_info_right_panel.currentIndex != 1:
+            self.parent.building_info_right_panel.setCurrentIndex(1)
         self.highlight_selected_item(x, y)
 
     def buy_pressed(self, name):
         x, y = self.current_selected_coords[0], self.current_selected_coords[1]
         self.parent.resources.add_building(x, y, name)
         self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
-        self.parent.buildings_layout_stack.setCurrentIndex(0)
+        self.parent.building_info_right_panel.setCurrentIndex(0)
     
     def toggle_grid(self):
         """Toggle grid visibility."""

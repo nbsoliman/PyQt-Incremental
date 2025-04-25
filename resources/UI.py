@@ -141,7 +141,7 @@ def createHomePage(parent):
         QTabWidget::pane {{
             border: 0;
             border-radius: 0px;
-            border-top: 1px solid #1e1e1e;
+            border-top: 1px solid #818181;
             margin: 0px;
             }}
     """)
@@ -164,7 +164,7 @@ def createHomePage(parent):
     parent.tabWidget.setIconSize(QSize(32, 32))
 
     parent.galaxy_tab.setLayout(galaxy_ui(parent))
-    parent.buildings_tab.setLayout(buildings_ui2(parent))
+    parent.buildings_tab.setLayout(interactive_map_stacked_widget(parent))
     parent.tab2.setLayout(ui2(parent))
     parent.tab3.setLayout(ui3(parent))
     parent.tab4.setLayout(ui_settings(parent))
@@ -228,49 +228,7 @@ def galaxy_ui(parent):
     backdrop_layout.addWidget(parent.planet_widget)
     return backdrop_layout
     
-def buildings_ui(parent):
-    buildings_layout = QVBoxLayout()
-    buildings_layout.setContentsMargins(0, 0, 0, 0)
-    parent.scroll_area = ScrollableGrid(bg_filename=parent.resources.resource_path("assets/planet1.jpg"), parent=parent)
-    scroll_area_widget = QWidget()
-    grid_layout = QGridLayout(scroll_area_widget)
-    # grid_layout.setSpacing(0)
-    grid_layout.setHorizontalSpacing(20)
-    grid_layout.setVerticalSpacing(10)
-
-    for i in range(21):
-        for j in range(21):
-            t = QGroupBox()
-            t.setFixedHeight(100)
-            t.setFixedWidth(100)
-            v = QVBoxLayout()
-            building_found = False
-            for building, details in parent.resources.data['buildings'].items():
-                # print(building,':',details)
-                if details['location']['x'] == i and details['location']['y'] == j:
-                    t.setStyleSheet('QWidget#b1 { border: 1px solid #f7d68a; padding:10px; background: #1e1e1e}')
-                    label = QLabel(building)
-                    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    v.addWidget(label)
-                    button = QPushButton(f'Upgrade', scroll_area_widget)
-                    v.addWidget(button)
-                    building_found = True
-                    break
-            if not building_found:
-                t.setStyleSheet('QWidget#b1 { border: none; padding:10px;}')
-                button = QPushButton(f'Build', scroll_area_widget)
-                button.setStyleSheet(f"border: none; background: transparent; color: {parent.resources.colors['light-text']}")
-                v.addWidget(button)
-            t.setLayout(v)
-            grid_layout.addWidget(t, i, j)
-
-    parent.scroll_area.setWidget(scroll_area_widget)
-    buildings_layout.addWidget(parent.scroll_area)
-    
-    QTimer.singleShot(0, parent.centerScrollArea)
-    return buildings_layout
-
-def buildings_ui2(parent):
+def map_ui(parent):
     layout = QGridLayout()
     layout.setColumnStretch(0, 4)
     layout.setColumnStretch(1, 1)
@@ -289,21 +247,23 @@ def buildings_ui2(parent):
                             margin: 0px;
                         }''')
 
-    parent.buildings_layout_stack = QStackedWidget(parent.right_gb)
+    parent.building_info_right_panel = QStackedWidget(parent.right_gb)
     tmp = QGridLayout(parent.right_gb)
-    tmp.addWidget(parent.buildings_layout_stack)
+    tmp.addWidget(parent.building_info_right_panel)
 
     upgrade_layout = QGridLayout()
     parent.buildings_title = QLabel()
     parent.buildings_title.setStyleSheet("font-size: 22px; font-weight: bold")
     parent.buildings_info = QLabel("Select a plot")
+    parent.buildings_cost = QLabel("Cost: ")
     parent.buildings_upgrade1 = QPushButton("")
     upgrade_layout.addWidget(parent.buildings_title, 0, 0, 1, 2, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
     upgrade_layout.addWidget(parent.buildings_info, 1, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
-    upgrade_layout.addWidget(parent.buildings_upgrade1, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+    upgrade_layout.addWidget(parent.buildings_cost, 2, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+    upgrade_layout.addWidget(parent.buildings_upgrade1, 3, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
     widget1 = QWidget()
     widget1.setLayout(upgrade_layout)
-    parent.buildings_layout_stack.addWidget(widget1)
+    parent.building_info_right_panel.addWidget(widget1)
 
     build_layout = QGridLayout()
     parent.buildings_title2 = QLabel("Build Menu")
@@ -331,15 +291,6 @@ def buildings_ui2(parent):
         build_layout.addLayout(info_layout, row, 1, 1, 1)
         build_layout.addWidget(cost_label, row, 2, 1, 1)
         build_layout.addWidget(buy_button, row, 3, 1, 1)
-    
-    # build_layout.addWidget(parent.buildings_title2, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-    # create_building_widget("Miner", "Extracts minerals from the ground.", "100 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 1)
-    # create_building_widget("Carbon Refinery", "Refines Carb", "150 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 2)
-    # create_building_widget("Merchant's Guild", "Trades resources with other planets.", "200 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 3)
-    # create_building_widget("Housing", "Provides shelter for people.", "50 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 4)
-    # create_building_widget("Smelter", "Assembles complex structures.", "250 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 5)
-    # create_building_widget("Assembler", "Assembles complex structures.", "300 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 6)
-    # create_building_widget("Manufacturer", "Produces goods for trade.", "400 Gold", parent.resources.resource_path('assets/icons/coin.svg'), 7)
 
     build_layout.addWidget(parent.buildings_title2, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
 
@@ -358,10 +309,49 @@ def buildings_ui2(parent):
 
     widget2 = QWidget()
     widget2.setLayout(build_layout)
-    parent.buildings_layout_stack.addWidget(widget2)
+    parent.building_info_right_panel.addWidget(widget2)
 
     layout.addWidget(parent.map_viewer, 0, 0, 1, 1)
     layout.addWidget(parent.right_gb, 0, 1, 1, 1)
+    return layout
+
+def interactive_map_stacked_widget(parent):
+    parent.buildings_view_switch = QStackedWidget(parent)
+
+    map_layout = map_ui(parent)
+    mining_layout = mining_page(parent)
+
+    map_widget = QWidget()
+    map_widget.setLayout(map_layout)
+    parent.buildings_view_switch.addWidget(map_widget)
+
+    mining_widget = QWidget()
+    mining_widget.setLayout(mining_layout)
+    parent.buildings_view_switch.addWidget(mining_widget)
+
+    interactive_layout = QVBoxLayout()
+    interactive_layout.addWidget(parent.buildings_view_switch)
+
+    return interactive_layout
+
+def mining_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Mining Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
     return layout
 
 def ui2(parent):

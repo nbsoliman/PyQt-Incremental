@@ -7,6 +7,8 @@ class ResourceManager:
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
+        self.planet_size = 20 # 20x20 grid
+
         self.colors = {
             "bg": "#272727",
             "light-text": "#c4c4c4",
@@ -81,24 +83,24 @@ class ResourceManager:
                     "name": "Base",
                     "level": 1,
                     "location": {
-                        "x": 20,
-                        "y": 20
+                        "x": int(self.planet_size/2),
+                        "y": int(self.planet_size/2)
                     }
                 },
                 "2": {
                     "name": "Housing",
                     "level": 1,
                     "location": {
-                        "x": 21,
-                        "y": 20
+                        "x": int(self.planet_size/2 + 1),
+                        "y": int(self.planet_size/2)
                     }
                 },
                 "3": {
                     "name": "Miner",
                     "level": 1,
                     "location": {
-                        "x": 20,
-                        "y": 21
+                        "x": int(self.planet_size/2),
+                        "y": int(self.planet_size/2 + 1)
                     }
                 }
             }
@@ -120,7 +122,7 @@ class ResourceManager:
             json.dump(self.data, f, indent=2)
 
     def create_building_grid(self):
-        self.building_grid = np.full((50, 50), None, dtype=object)
+        self.building_grid = np.full((self.planet_size, self.planet_size), None, dtype=object)
 
         for building_id, building_info in self.data["buildings"].items():
             x = building_info["location"]["x"]
