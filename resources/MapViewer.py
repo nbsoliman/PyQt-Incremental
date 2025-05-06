@@ -180,7 +180,8 @@ class MapViewer(QGraphicsView):
         self.highlight_selected_item(x, y)
 
     def widget_double_clicked(self, event, x, y):
-        self.parent.buildings_view_switch.setCurrentIndex(1)
+        building_data = self.parent.resources.building_grid[x,y]
+        self.parent.buildings_view_switch.setCurrentIndex(self.parent.tab_lookup_table[building_data["name"]])
 
     def build_pressed(self, x, y):
         self.current_selected_coords = x, y

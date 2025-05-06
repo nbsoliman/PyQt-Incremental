@@ -318,16 +318,27 @@ def map_ui(parent):
 def interactive_map_stacked_widget(parent):
     parent.buildings_view_switch = QStackedWidget(parent)
 
-    map_layout = map_ui(parent)
-    mining_layout = mining_page(parent)
+    parent.tab_lookup_table = {
+        "Map": 0,
+        "Miner": 1,
+        "Housing": 2
+    }
 
+    map_layout = map_ui(parent)
     map_widget = QWidget()
     map_widget.setLayout(map_layout)
-    parent.buildings_view_switch.addWidget(map_widget)
 
+    mining_layout = mining_page(parent)
     mining_widget = QWidget()
     mining_widget.setLayout(mining_layout)
+
+    housing_layout = housing_page(parent)
+    housing_widget = QWidget()
+    housing_widget.setLayout(housing_layout)
+    
+    parent.buildings_view_switch.addWidget(map_widget)
     parent.buildings_view_switch.addWidget(mining_widget)
+    parent.buildings_view_switch.addWidget(housing_widget)
 
     interactive_layout = QVBoxLayout()
     interactive_layout.addWidget(parent.buildings_view_switch)
@@ -338,6 +349,26 @@ def mining_page(parent):
     layout = QGridLayout()
 
     header_label = QLabel("Mining Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
+def housing_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Housing Page")
     header_label.setStyleSheet("font-size: 24px;")
     header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
