@@ -1,3 +1,29 @@
+Building Notes:
+
+1. Tree Cutter: Plant Tree, wait 60s, choose between cut tree or harvest saplings to grow more. when you cut a tree get a random number bettween 1-3 logs. then you can upgrade this to increase both the min and max separately as well as reduce the amount of time for trees to grow, and how many trees you can have planted at the same time. 
+
+2. **Mine: Depth Exploration System**
+- **Core Mechanic**: Dig deeper to find more resources and reveal hidden mines with unique bonuses.
+  
+- **Upgrade Options**:
+  1. **Layer Exploration**: Every 45 seconds, dig one layer deeper. Each layer has a chance to contain a special resource or a bonus zone.
+  2. **Random Resource Generator**: Each exploration yields a random resource amount; upgrade to improve the minimum and maximum potential yield.
+  3. **Geological Surveys**: Spend resources to reveal the type of ore in the next layer to make strategic decisions.
+  4. **Drill Efficiency**: Use specific resources to make digging faster and less resource-intensive.
+  5. **Mining Technology**: Random chance to unlock a rare technology that increases overall mining efficiency.
+
+Choose a direction which yields diff resources. so diff mines can specialize in diff things
+
+3. **Farm: Harvest and Weather Patterns**
+
+- **Core Mechanic**: Manage crops with respect to changing weather patterns for optimal production.
+  
+- **Upgrade Options**:
+  1. **Crop Cycle**: Plant and harvest different cycles of crops every 75 seconds, with varying yields.
+  2. **Random Weather Generator**: Weather can either boost or decrease crop production. Upgrade to build defenses or irrigation systems to mitigate weather effects.
+  3. **Hybrid Seeds**: Invest in research to access seed types that have a higher base yield or resistance to bad weather.
+  4. **Crop Rotation Strategy**: Unlock different crop types that improve soil fertility and boost future crop output.
+  5. **Climate Control**: Upgrade greenhouses or other technologies to create a microclimate, enhancing growth speed and yield predictability.
 
 from dataclasses import dataclass
 from typing import Any, Dict
