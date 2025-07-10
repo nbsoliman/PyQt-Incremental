@@ -1,5 +1,5 @@
 from resources.ResourceManager import ResourceManager
-from resources.UI.MainUI import *
+from resources.UI import *
 import qdarktheme
 import json, os, sys, traceback, re, random
 from functools import partial
