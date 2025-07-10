@@ -1,0 +1,55 @@
+
+from dataclasses import dataclass
+from typing import Any, Dict
+
+@dataclass
+class ResourceVariable:
+    resource_name: str
+    update_frequency: int  # Update frequency in milliseconds
+    resource_value: int
+
+# Example instances
+
+# Example 1
+wood_resource = ResourceVariable(
+    resource_name="wood",
+    update_frequency=2000,
+    resource_value=22
+)
+
+# Example 2
+stone_resource = ResourceVariable(
+    resource_name="stone",
+    update_frequency=3500,
+    resource_value=15
+)
+
+# Example 3
+iron_resource = ResourceVariable(
+    resource_name="iron",
+    update_frequency=5000,
+    resource_value=30
+)
+
+# Example 4
+water_resource = ResourceVariable(
+    resource_name="water",
+    update_frequency=1000,
+    resource_value=50
+)
+
+# Example 5
+gold_resource = ResourceVariable(
+    resource_name="gold",
+    update_frequency=4500,
+    resource_value=5
+)
+
+# Store the resources in a collection for easy access
+resources: Dict[str, ResourceVariable] = {
+    wood_resource.resource_name: wood_resource,
+    stone_resource.resource_name: stone_resource,
+    iron_resource.resource_name: iron_resource,
+    water_resource.resource_name: water_resource,
+    gold_resource.resource_name: gold_resource
+}
