@@ -1,7 +1,7 @@
 {
   "resources": {
     "people": 1,
-    "gold": 100,
+    "gold": 60,
     "carbon": 50,
     "aluminum": 50,
     "silicon": 50,
@@ -51,8 +51,38 @@
       "level": 1,
       "internal_upgrade_1": 0,
       "location": {
-        "x": 3,
-        "y": 3
+        "x": 12,
+        "y": 12
+      }
+    },
+    "2": {
+      "name": "Merchant's Guild",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 19,
+        "y": 16
+      }
+    },
+    "3": {
+      "name": "Assembler",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 15,
+        "y": 13
+      }
+    },
+    "4": {
+      "name": "Refinery",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 14,
+        "y": 11
       }
     }
   }

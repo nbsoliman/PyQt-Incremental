@@ -44,16 +44,16 @@ class MainUI(QWidget):
         super().__init__()
         self.resources = ResourceManager()
         self.setWindowTitle("GUI")
-        self.setFixedSize(1920, 1080)
-        self.setMaximumSize(1920, 1080)
+        self.setFixedSize(1600, 900)
+        self.setMaximumSize(1600, 900)
         self.game_closed = False
 
         self.stackedWidget = QStackedWidget(self)
         self.stackedWidget.setCurrentIndex(0)
-        self.setStyleSheet(f'background: {self.resources.colors['dark-bg']}')
+        self.setStyleSheet(f'background: {self.resources.colors["dark-bg"]}')
 
         # For Testing Load Straight Into Game:
-        self.newGamePressed()
+        self.loadGamePressed()
         QTimer.singleShot(100, lambda: self.tabWidget.setCurrentIndex(1))
 
         # Or Title Screen
@@ -126,7 +126,7 @@ class MainUI(QWidget):
         # self.resize(750,550)
         self.center()
         self.resources.load()
-        self.createHomePage()
+        createHomePage(self)
         self.stackedWidget.setCurrentIndex(1)
         
         # Start idle loop worker

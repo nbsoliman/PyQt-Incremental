@@ -7,7 +7,7 @@ class ResourceManager:
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
-        self.planet_size = 7 # 7x7 grid
+        self.planet_size = 25 # 25x25 grid
 
         self.colors = {
             "dark-bg": "#1e1e1e",

@@ -655,7 +655,7 @@ def ui_settings(parent):
     parent.resolution_select = QComboBox()
     resolution_options = ['1080x720', '1280x720', '1366x768', '1600x900', '1920x1080', '2560x1440', '3840x2160']
     parent.resolution_select.addItems(resolution_options)
-    parent.resolution_select.setCurrentText('1920x1080')
+    parent.resolution_select.setCurrentText('1600x900')
     parent.resolution_select.currentTextChanged.connect(parent.adjust_resolution)
     displayLayout.addWidget(parent.resolution_select, 1, 1, 1, 2)
 
