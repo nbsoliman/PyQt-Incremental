@@ -3,7 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 from functools import partial
-import json, os, sys, traceback, re, random
+import json, os, sys, traceback, re, random, math
 import pyqtgraph as pg
 
 from resources.Space3D import Planet3DWidget
@@ -20,8 +20,8 @@ def createMainMenu(parent):
     parent.this_widget.setLayout(parent.backdrop_layout)
     parent.this_widget.setStyleSheet('background: transparent')
 
-    parent.planet_widget = Planet3DWidget()
-    parent.backdrop_layout.addWidget(parent.planet_widget)
+    # parent.planet_widget = Planet3DWidget()
+    # parent.backdrop_layout.addWidget(parent.planet_widget)
     parent.overlay_widget = create_overlay_layout(parent)
 
     parent.stackedWidget.addWidget(parent.this_widget)
@@ -145,35 +145,30 @@ def createHomePage(parent):
             margin: 0px;
             }}
     """)
-    parent.galaxy_tab = QWidget()
+    parent.map_tab = QWidget()
     parent.buildings_tab = QWidget()
     parent.tab2 = QWidget()
     parent.tab3 = QWidget()
     parent.tab4 = QWidget()
-    tabIndex0 = parent.tabWidget.addTab(parent.galaxy_tab, "Galaxy")
-    tabIndex1 = parent.tabWidget.addTab(parent.buildings_tab, "Buildings")
+    tabIndex0 = parent.tabWidget.addTab(parent.map_tab, "Galaxy")
+    tabIndex1 = parent.tabWidget.addTab(parent.buildings_tab, "Planet")
     tabIndex2 = parent.tabWidget.addTab(parent.tab2, "Research")
-    tabIndex3 = parent.tabWidget.addTab(parent.tab3, "Graphs")
+    tabIndex3 = parent.tabWidget.addTab(parent.tab3, "Stats")
     tabIndex4 = parent.tabWidget.addTab(parent.tab4, "Settings")
-    parent.tabWidget.setTabIcon(tabIndex0, QIcon(parent.resources.resource_path("assets/home.png")))
-    parent.tabWidget.setTabIcon(tabIndex1, QIcon(parent.resources.resource_path("assets/home.png")))
-    parent.tabWidget.setTabIcon(tabIndex2, QIcon(parent.resources.resource_path("assets/list-check.png")))
-    parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/graph-up.png")))
-    parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/graph-up.png")))
+    parent.tabWidget.setTabIcon(tabIndex0, QIcon(parent.resources.resource_path("assets/icons/galaxy.png")))
+    parent.tabWidget.setTabIcon(tabIndex1, QIcon(parent.resources.resource_path("assets/icons/planet.png")))
+    parent.tabWidget.setTabIcon(tabIndex2, QIcon(parent.resources.resource_path("assets/icons/research.png")))
+    parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/icons/stats.png")))
     parent.tabWidget.setTabIcon(tabIndex4, QIcon(parent.resources.resource_path("assets/gear.png")))
     parent.tabWidget.setIconSize(QSize(32, 32))
 
-    parent.galaxy_tab.setLayout(galaxy_ui(parent))
+    parent.map_tab.setLayout(galaxy_map_ui(parent))
     parent.buildings_tab.setLayout(interactive_map_stacked_widget(parent))
     parent.tab2.setLayout(ui2(parent))
     parent.tab3.setLayout(ui3(parent))
     parent.tab4.setLayout(ui_settings(parent))
     parent.tabWidget.currentChanged.connect(parent.tab_changed)
 
-    # resource_bar = QGroupBox()
-    # resource_bar.setObjectName("b1")
-    # resource_bar.setStyleSheet('QWidget#b1 {background-color: #161718; background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #161718, stop:0.5 #1f2022, stop:1 #0e0e0f); font-size: 18px; font-weight: bold; padding: 10px; border-radius: 10px; border: 1px solid #f7d68a; margin: 10px; }')
-    
     h = QHBoxLayout()
 
     def create_resource_group(label_text, label_var, label_rate):
@@ -195,19 +190,19 @@ def createHomePage(parent):
         group_box.setLayout(layout)
         return group_box
 
-    resource_labels = {}
-    resource_rate_labels = {}
+    parent.resource_labels = {}
+    parent.resource_rate_labels = {}
 
     for resource, amount in parent.resources.data['resources'].items():
         if amount > 0:
-            resource_labels[resource] = QLabel(str(amount))
-            resource_rate_labels[resource] = QLabel(f"{parent.resources.data['resource_rates'].get(resource, 0)}/s")
+            parent.resource_labels[resource] = QLabel(str(amount))
+            parent.resource_rate_labels[resource] = QLabel(f"{parent.resources.data['resource_rates'].get(resource, 0)}/s")
 
-    resource_groups = {}
+    parent.resource_groups = {}
 
-    for resource in resource_labels:
-        resource_groups[resource] = create_resource_group(f"{resource.capitalize()}:", resource_labels[resource], resource_rate_labels[resource])
-        h.addWidget(resource_groups[resource])
+    for resource in parent.resource_labels:
+        parent.resource_groups[resource] = create_resource_group(f"{resource.capitalize()}:", parent.resource_labels[resource], parent.resource_rate_labels[resource])
+        h.addWidget(parent.resource_groups[resource])
 
     # home_page.addWidget(resource_bar, 0, 0, 1, 4)
     home_page.addLayout(h, 0, 0, 1, 4)
@@ -219,15 +214,70 @@ def createHomePage(parent):
     home_page_widget.setLayout(home_page)
     parent.stackedWidget.addWidget(home_page_widget)
 
-def galaxy_ui(parent):
-    backdrop_layout = QVBoxLayout()
-    backdrop_layout.setContentsMargins(0, 0, 0, 0)
-    backdrop_layout.setSpacing(0)
+def interactive_map_stacked_widget(parent):
+    from collections import OrderedDict
 
-    parent.planet_widget = Planet3DWidget()
-    backdrop_layout.addWidget(parent.planet_widget)
-    return backdrop_layout
-    
+    parent.buildings_view_switch = QStackedWidget(parent)
+    pages = OrderedDict([
+        ("Map", map_ui),
+        ("Base", base_page),
+        ("Miner", mining_page),
+        ("Housing", housing_page),
+        ("Refinery", refinery_page),
+        ("Merchant's Guild", merchants_page),
+        ("Assembler", assembler_page),
+        ("Manufacturer", manufacturer_page),
+        ("Smelter", smelter_page),
+    ])
+    parent.tab_lookup_table = {name: i for i, name in enumerate(pages)}
+
+    for page_func in pages.values():
+        layout = page_func(parent)
+        widget = QWidget()
+        widget.setLayout(layout)
+        parent.buildings_view_switch.addWidget(widget)
+
+    interactive_layout = QVBoxLayout()
+    interactive_layout.addWidget(parent.buildings_view_switch)
+    return interactive_layout
+
+def galaxy_map_ui(parent):
+    # Create the main layout
+    layout = QVBoxLayout(parent)
+
+    # Create graphics scene and view
+    scene_size = 1080
+    scene = QGraphicsScene(-scene_size//2, -scene_size//2, scene_size, scene_size)
+    view = QGraphicsView(scene)
+    # view.setFixedSize(scene_size + 2, scene_size + 2)
+
+    # Add central star
+    star_radius = int(scene_size/20)
+    star = QGraphicsEllipseItem(-star_radius, -star_radius, star_radius*2, star_radius*2)
+    star.setBrush(QBrush(QColor("yellow")))
+    scene.addItem(star)
+
+    # Add 8 orbiting planets
+    planet_radius = int(scene_size/33)
+    orbit_radius = int(scene_size/4)
+    for i in range(8):
+        angle_deg = i * (360 / 8)
+        angle_rad = math.radians(angle_deg)
+        x = math.cos(angle_rad) * orbit_radius
+        y = math.sin(angle_rad) * orbit_radius
+
+        # Create a clickable button as the planet
+        planet_button = QPushButton(f"P{i+1}")
+        planet_button.setFixedSize(30, 30)
+        proxy = QGraphicsProxyWidget()
+        proxy.setWidget(planet_button)
+        proxy.setPos(QPointF(x - planet_button.width()/2, y - planet_button.height()/2))
+        scene.addItem(proxy)
+
+    # Add the view to the layout
+    layout.addWidget(view)
+    return layout
+
 def map_ui(parent):
     layout = QGridLayout()
     layout.setColumnStretch(0, 4)
@@ -315,35 +365,25 @@ def map_ui(parent):
     layout.addWidget(parent.right_gb, 0, 1, 1, 1)
     return layout
 
-def interactive_map_stacked_widget(parent):
-    parent.buildings_view_switch = QStackedWidget(parent)
+def base_page(parent):
+    layout = QGridLayout()
 
-    parent.tab_lookup_table = {
-        "Map": 0,
-        "Miner": 1,
-        "Housing": 2
-    }
+    header_label = QLabel("Base Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    map_layout = map_ui(parent)
-    map_widget = QWidget()
-    map_widget.setLayout(map_layout)
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
 
-    mining_layout = mining_page(parent)
-    mining_widget = QWidget()
-    mining_widget.setLayout(mining_layout)
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
 
-    housing_layout = housing_page(parent)
-    housing_widget = QWidget()
-    housing_widget.setLayout(housing_layout)
-    
-    parent.buildings_view_switch.addWidget(map_widget)
-    parent.buildings_view_switch.addWidget(mining_widget)
-    parent.buildings_view_switch.addWidget(housing_widget)
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
 
-    interactive_layout = QVBoxLayout()
-    interactive_layout.addWidget(parent.buildings_view_switch)
+    parent.setLayout(layout)
 
-    return interactive_layout
+    return layout
 
 def mining_page(parent):
     layout = QGridLayout()
@@ -385,6 +425,106 @@ def housing_page(parent):
 
     return layout
 
+def refinery_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Refinery Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
+def merchants_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Merchants Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
+def assembler_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Assembler Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
+def manufacturer_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Manufacturer Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
+def smelter_page(parent):
+    layout = QGridLayout()
+
+    header_label = QLabel("Smelter Page")
+    header_label.setStyleSheet("font-size: 24px;")
+    header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+    back_button = QPushButton("Back")
+    back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
+    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
+
+    layout.setRowStretch(0, 1)
+    layout.setRowStretch(1, 4)
+
+    parent.setLayout(layout)
+
+    return layout
+
 def ui2(parent):
     layout = QVBoxLayout()
     
@@ -407,7 +547,7 @@ def ui2(parent):
 def ui3(parent):
     layout = QGridLayout()
     parent.graphWidget = pg.PlotWidget()
-    parent.graphWidget.setBackground('#202124')
+    parent.graphWidget.setBackground('transparent')
     parent.graphWidget.getAxis('left').setStyle(showValues=False)
     parent.graphWidget.getAxis('bottom').setStyle(showValues=False)
     label = QLabel("People/Gold/Resources over Time")
@@ -515,7 +655,7 @@ def ui_settings(parent):
     parent.resolution_select = QComboBox()
     resolution_options = ['1080x720', '1280x720', '1366x768', '1600x900', '1920x1080', '2560x1440', '3840x2160']
     parent.resolution_select.addItems(resolution_options)
-    parent.resolution_select.setCurrentText('1080x720')
+    parent.resolution_select.setCurrentText('1920x1080')
     parent.resolution_select.currentTextChanged.connect(parent.adjust_resolution)
     displayLayout.addWidget(parent.resolution_select, 1, 1, 1, 2)
 
@@ -595,3 +735,12 @@ def ui_settings(parent):
     save_settings.setStyleSheet("background: #8AB4F7; border: 1px solid #8AB4F7; color: #202124")
 
     return layout
+
+# def galaxy_ui(parent):
+#     backdrop_layout = QVBoxLayout()
+#     backdrop_layout.setContentsMargins(0, 0, 0, 0)
+#     backdrop_layout.setSpacing(0)
+
+#     parent.planet_widget = Planet3DWidget()
+#     backdrop_layout.addWidget(parent.planet_widget)
+#     return backdrop_layout

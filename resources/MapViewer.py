@@ -20,6 +20,7 @@ class MapViewer(QGraphicsView):
         self.current_selected_coords = (0,0)
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
+        self.setBackgroundBrush(QColor(self.parent.resources.colors['bg']))
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.grid_size = 250 # 10000/250 (40x40 grid)
@@ -104,17 +105,31 @@ class MapViewer(QGraphicsView):
         self.clear_area(x, y)
 
         widget = QWidget()
+        widget.setStyleSheet(f"background: {self.parent.resources.colors['dark-bg']}; border: none;")
+        
         vbox = QVBoxLayout(widget)
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(0)
+
         icon_label = QLabel()
-        icon_label.setStyleSheet("background: #1e1e1e")
+        icon_label.setStyleSheet("background: transparent; border: none;")
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/hammer.svg')).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+        icon_pixmap = QPixmap(
+            self.parent.resources.resource_path('assets/icons/hammer.svg')
+        ).scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         icon_label.setPixmap(icon_pixmap)
-        vbox.insertWidget(0, icon_label)
+
+        vbox.addWidget(icon_label)
 
         proxy_widget = QGraphicsProxyWidget()
         proxy_widget.setWidget(widget)
-        proxy_widget.setGeometry(QRectF(x * self.grid_size + self.margin * 3, y * self.grid_size + self.margin * 3, self.grid_size - self.margin * 6, self.grid_size - self.margin * 6))
+        proxy_widget.setGeometry(QRectF(
+            x * self.grid_size + self.margin * 3,
+            y * self.grid_size + self.margin * 3,
+            self.grid_size - self.margin * 6,
+            self.grid_size - self.margin * 6
+        ))
         self.scene.addItem(proxy_widget)
 
         icon_label.mousePressEvent = lambda _, x=x, y=y: self.build_pressed(x, y)
@@ -168,6 +183,7 @@ class MapViewer(QGraphicsView):
         self.scene.addItem(proxy_widget)
 
     def upgrade_clicked(self, event, x, y):
+        print('upgrade clicked')
         building_data = self.parent.resources.building_grid[x,y]
         self.current_selected_coords = x, y
         if self.parent.building_info_right_panel.currentIndex != 0:
@@ -191,6 +207,27 @@ class MapViewer(QGraphicsView):
 
     def buy_pressed(self, name):
         x, y = self.current_selected_coords[0], self.current_selected_coords[1]
+        build_cost = self.parent.resources.game_data['buildings'][name]['build_cost']
+        resources = self.parent.resources.data['resources']
+        insufficient_resources = []
+
+        # Check which resources are insufficient
+        for resource_required, amount_required in build_cost.items():
+            if resources.get(resource_required, 0) < amount_required:
+                print(f'not enough {resource_required}')
+                insufficient_resources.append(resource_required)
+
+        # Emit callbacks for all insufficient resources and exit early
+        if insufficient_resources:
+            for res in insufficient_resources:
+                self.parent.info_callback(['not-enough-of-resource', res])
+            return
+
+        # If we reach here, we have enough of all resources – subtract the cost
+        for resource_required, amount_required in build_cost.items():
+            resources[resource_required] -= amount_required
+
+        print('Resources subtracted, proceeding...')
         self.parent.resources.add_building(x, y, name)
         self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
         self.parent.building_info_right_panel.setCurrentIndex(0)
@@ -219,12 +256,12 @@ class MapViewer(QGraphicsView):
 
     def wheelEvent(self, event, limited_zoom=True):
         if not limited_zoom:
-            zoom_factor = 1.15 if event.angleDelta().y() > 0 else (1 / 1.15)
+            zoom_factor = 1.5 if event.angleDelta().y() > 0 else (1 / 1.5)
             self.scale(zoom_factor, zoom_factor)
             event.accept()
             return
         
-        zoom_in_factor = 1.15
+        zoom_in_factor = 1.5
         zoom_out_factor = 1 / zoom_in_factor
 
         visible_height = self.viewport().height()

@@ -7,10 +7,13 @@ class ResourceManager:
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
-        self.planet_size = 20 # 20x20 grid
+        self.planet_size = 7 # 7x7 grid
 
         self.colors = {
-            "bg": "#272727",
+            "dark-bg": "#1e1e1e",
+            "bg": "#232427",
+            "old-bg": "#272727",
+            "blue-bg": '#202124',
             "light-text": "#c4c4c4",
             "red": "#f7918a",
             "orange": "#f7c28a",
@@ -39,7 +42,7 @@ class ResourceManager:
                 "aluminum": 50, # Lightweight metal, great for constructing frames and structural components.
                 "silicon": 50,  # Necessary for creating electronics, solar panels, and glass.
                 "iron": 0,      # Strong metal used for heavy construction and tools.
-                "hydrogen": 0,  # Fuel for power generation and advanced chemical processes.
+                "hydrogen": 0,  # Fuel for power generation and advanced chemical processes
                 "copper": 0,    # Conductive metal essential for electrical systems.
                 "titanium": 0,  # Strong and lightweight metal for advanced structures and vehicles..
                 "lithium": 0,   # Key for energy storage solutions such as batteries.
@@ -47,7 +50,7 @@ class ResourceManager:
             },
             "resource_rates": {
                 "people": 0,
-                "gold": 0,
+                "gold": 10,
                 "carbon": 0,
                 "aluminum": 0,
                 "silicon": 0,
@@ -82,25 +85,10 @@ class ResourceManager:
                 "1": {
                     "name": "Base",
                     "level": 1,
+                    "internal_upgrade_1": 0,
                     "location": {
                         "x": int(self.planet_size/2),
                         "y": int(self.planet_size/2)
-                    }
-                },
-                "2": {
-                    "name": "Housing",
-                    "level": 1,
-                    "location": {
-                        "x": int(self.planet_size/2 + 1),
-                        "y": int(self.planet_size/2)
-                    }
-                },
-                "3": {
-                    "name": "Miner",
-                    "level": 1,
-                    "location": {
-                        "x": int(self.planet_size/2),
-                        "y": int(self.planet_size/2 + 1)
                     }
                 }
             }
@@ -141,5 +129,10 @@ class ResourceManager:
                 "y": y
             }
         }
+
         self.data["buildings"][new_id] = new_building
+
+        if hasattr(self, "building_grid"):
+            self.building_grid[x, y] = new_building
+
         self.save()

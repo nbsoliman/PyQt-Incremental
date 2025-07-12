@@ -1,7 +1,8 @@
 from resources.ResourceManager import ResourceManager
+from resources.IdleThread import idle_thread_loop
 from resources.UI import *
 import qdarktheme
-import json, os, sys, traceback, re, random
+import json, os, sys, traceback
 from functools import partial
 import pyqtgraph as pg
 from PyQt6.QtWidgets import *
@@ -43,10 +44,13 @@ class MainUI(QWidget):
         super().__init__()
         self.resources = ResourceManager()
         self.setWindowTitle("GUI")
-        self.setFixedSize(1080, 720)
-        self.setMaximumSize(1080, 720)
+        self.setFixedSize(1920, 1080)
+        self.setMaximumSize(1920, 1080)
+        self.game_closed = False
+
         self.stackedWidget = QStackedWidget(self)
         self.stackedWidget.setCurrentIndex(0)
+        self.setStyleSheet(f'background: {self.resources.colors['dark-bg']}')
 
         # For Testing Load Straight Into Game:
         self.newGamePressed()
@@ -61,6 +65,19 @@ class MainUI(QWidget):
         main_layout.setSpacing(0)
         self.setLayout(main_layout)
 
+    def info_callback(self, data):
+        if data[0] == "update-resource":
+            self.resource_labels[data[1]].setText(str(data[2]))
+            self.resource_rate_labels[data[1]].setText(f"{str(data[3])}/s")
+        if data[0] == "not-enough-of-resource":
+            self.resource_groups[data[1]].setStyleSheet(
+            f'font-size: 14px; margin-left:10px; background: {self.resources.colors["red"]}')
+            QTimer.singleShot(
+                500,
+                lambda: self.resource_groups[data[1]].setStyleSheet(
+                    'font-size: 14px; margin-left:10px; background: transparent'
+                )
+            )  
     def updateProgressBar(self, index):
         progressBar = self.progressBars[index]
         value = progressBar.value() + 1
@@ -89,14 +106,6 @@ class MainUI(QWidget):
             self.showFullScreen()
         else:
             self.showNormal()
-
-    def centerScrollArea(self):
-        scroll_area_widget = self.scroll_area.widget()
-        center_x = (scroll_area_widget.sizeHint().width() - self.scroll_area.viewport().width()) // 2
-        center_y = (scroll_area_widget.sizeHint().height() - self.scroll_area.viewport().height()) // 2
-        
-        self.scroll_area.horizontalScrollBar().setValue(center_x)
-        self.scroll_area.verticalScrollBar().setValue(center_y)
     
     def newGamePressed(self):
         self.resources.create()
@@ -104,7 +113,14 @@ class MainUI(QWidget):
         createHomePage(self) # Takes long time due to MapViewer Creation
         self.stackedWidget.setCurrentIndex(1)
         self.center()
-        self.planet_widget.toggle_autopan()
+
+        # Start idle loop worker
+        self.threadpool = QThreadPool()
+        worker = Worker(idle_thread_loop, self)
+        worker.signals.info.connect(self.info_callback)
+        self.threadpool.start(worker)
+
+        # self.planet_widget.toggle_autopan()
     
     def loadGamePressed(self):
         # self.resize(750,550)
@@ -112,6 +128,12 @@ class MainUI(QWidget):
         self.resources.load()
         self.createHomePage()
         self.stackedWidget.setCurrentIndex(1)
+        
+        # Start idle loop worker
+        self.threadpool = QThreadPool()
+        worker = Worker(idle_thread_loop, self)
+        worker.signals.info.connect(self.info_callback)
+        self.threadpool.start(worker)
 
     def tab_changed(self, index):
         self.current_tab_index = index
@@ -132,6 +154,10 @@ class MainUI(QWidget):
         if hasattr(self, 'overlay_widget'):
             self.overlay_widget.setGeometry((self.width() - 300) // 2,(self.height() - 400) // 2,300,500)
         super().resizeEvent(event)
+
+    def closeEvent(self, a0):
+        self.game_closed = True
+        return super().closeEvent(a0)
 
 app = QApplication(sys.argv)
 app.setStyleSheet(qdarktheme.load_stylesheet())
