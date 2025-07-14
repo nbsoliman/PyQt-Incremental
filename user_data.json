@@ -1,7 +1,7 @@
 {
   "resources": {
     "people": 1,
-    "gold": 60,
+    "gold": 1900,
     "carbon": 50,
     "aluminum": 50,
     "silicon": 50,
@@ -56,33 +56,63 @@
       }
     },
     "2": {
-      "name": "Merchant's Guild",
+      "name": "Housing",
       "level": 1,
       "internal_upgrade_1": 0,
       "icon": "assets/icons/home.svg",
       "location": {
-        "x": 19,
-        "y": 16
+        "x": 11,
+        "y": 10
       }
     },
     "3": {
-      "name": "Assembler",
+      "name": "Housing",
       "level": 1,
       "internal_upgrade_1": 0,
       "icon": "assets/icons/home.svg",
       "location": {
-        "x": 15,
-        "y": 13
+        "x": 12,
+        "y": 10
       }
     },
     "4": {
-      "name": "Refinery",
+      "name": "Housing",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 13,
+        "y": 10
+      }
+    },
+    "5": {
+      "name": "Assembler",
       "level": 1,
       "internal_upgrade_1": 0,
       "icon": "assets/icons/home.svg",
       "location": {
         "x": 14,
         "y": 11
+      }
+    },
+    "6": {
+      "name": "Assembler",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 14,
+        "y": 12
+      }
+    },
+    "7": {
+      "name": "Assembler",
+      "level": 1,
+      "internal_upgrade_1": 0,
+      "icon": "assets/icons/home.svg",
+      "location": {
+        "x": 14,
+        "y": 13
       }
     }
   }

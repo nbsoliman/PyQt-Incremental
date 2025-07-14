@@ -9,9 +9,10 @@ import pyqtgraph as pg
 from resources.Space3D import Planet3DWidget
 from resources.ScrollableGrid import ScrollableGrid
 from resources.MapViewer import MapViewer
+from resources.UITools import create_upgrade_box, once_ui_has_been_created
 from resources.Space3D import Planet3DWidget
 
-def createMainMenu(parent):
+def create_main_menu(parent):
     parent.backdrop_layout = QVBoxLayout()
     parent.backdrop_layout.setContentsMargins(0, 0, 0, 0)
     parent.backdrop_layout.setSpacing(0)
@@ -133,7 +134,7 @@ def create_overlay_layout(parent):
 
     return overlay_widget
 
-def createHomePage(parent):
+def create_home_page(parent):
     home_page = QGridLayout()
     home_page.setContentsMargins(0, 0, 0, 0)
     parent.tabWidget = QTabWidget()
@@ -213,6 +214,8 @@ def createHomePage(parent):
     home_page_widget = QWidget()
     home_page_widget.setLayout(home_page)
     parent.stackedWidget.addWidget(home_page_widget)
+
+    once_ui_has_been_created(parent)
 
 def interactive_map_stacked_widget(parent):
     from collections import OrderedDict
@@ -368,21 +371,93 @@ def map_ui(parent):
 def base_page(parent):
     layout = QGridLayout()
 
-    header_label = QLabel("Base Page")
-    header_label.setStyleSheet("font-size: 24px;")
+    # Header
+    header_label = QLabel("Base Operations: Scan & Salvage")
+    header_label.setStyleSheet("font-size: 24px; font-weight: bold;")
     header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    layout.addWidget(header_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+    # Description
+    description = QLabel(
+        "Initiate a scan to search for salvageable debris around the planet. "
+        "Find gold and other resources. Assign citizens to automate scans."
+    )
+    description.setWordWrap(True)
+    description.setStyleSheet("font-size: 14px;")
+
+    # Scan Button
+    scan_button = QPushButton("Initiate Scan")
+    scan_button.setFixedHeight(40)
+    scan_button.setStyleSheet(f"background: {parent.resources.colors['green']}; border: {parent.resources.colors['green']};")
+    # scan_button.clicked.connect(parent.initiate_scan_clicked)
+
+    # Citizen Assignment Controls
+    assign_group = QGroupBox("Assign Citizens")
+    assign_group.setObjectName("orellow-border")
+    assign_layout = QGridLayout()
+    minus_button = QPushButton("-")
+    minus_button.setStyleSheet("font-size: 24px")
+    # minus_button.clicked.connect(parent.decrease_citizen_assignment)
+    plus_button = QPushButton("+")
+    plus_button.setStyleSheet("font-size: 24px")
+    # plus_button.clicked.connect(parent.increase_citizen_assignment)
+    citizen_input = QLineEdit("0")
+    citizen_input.setStyleSheet("font-size: 24px; border: none;")
+    citizen_input.setFixedWidth(80)
+    citizen_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    citizen_input.setReadOnly(True)
+
+    desc2 = QLabel(
+        "Initiate a scan to search for salvageable debris around the planet. "
+        "Find gold and other resources. Assign citizens to automate scans."
+        "For each citizen working in the Base of Operations. You will generate your highscore every second."
+    )
+    desc2.setWordWrap(True)
+    desc2.setStyleSheet("font-size: 14px;")
+
+    assign_layout.addWidget(minus_button, 0, 0)
+    assign_layout.addWidget(citizen_input, 0, 1)
+    assign_layout.addWidget(plus_button, 0, 2)
+    assign_layout.addWidget(desc2, 1, 0, 1, 3)
+    assign_group.setLayout(assign_layout)
+
+    # Upgrades Section
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+
+    upgrades_container = QWidget()
+    upgrades_layout = QVBoxLayout(upgrades_container)
+
+    for i in range(5):
+        upgrade_id = f"upgrade{i+1}"
+        upgrade_box = create_upgrade_box(
+            upgrade_id=upgrade_id,
+            upgrade_title=f"Upgrade Title {i+1}",
+            upgrade_desc_text="Increases scan efficiency or rewards.",
+            rank_text="Rank: 0/10",
+            cost_text="Cost: 100 gold",
+            parent=parent
+        )
+        upgrades_layout.addWidget(upgrade_box)
+
+    upgrades_container.setLayout(upgrades_layout)
+    scroll_area.setWidget(upgrades_container)
+
+    layout.addWidget(header_label, 0, 0, 1, 2)
+    layout.addWidget(scroll_area, 1, 1, 3, 1)
+    layout.addWidget(description, 1, 0, 1, 1)
+    layout.addWidget(scan_button, 2, 0)
+    layout.addWidget(assign_group, 3, 0)
+    
+    layout.setRowStretch(0,0)
+    layout.setRowStretch(1,1)
+    layout.setRowStretch(2,1)
+    layout.setRowStretch(3,0)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
-    layout.addWidget(back_button, 2, 0, Qt.AlignmentFlag.AlignLeft)
-
-    layout.setRowStretch(0, 1)
-    layout.setRowStretch(1, 4)
+    layout.addWidget(back_button, 4, 0, Qt.AlignmentFlag.AlignLeft)
 
     parent.setLayout(layout)
-
     return layout
 
 def mining_page(parent):

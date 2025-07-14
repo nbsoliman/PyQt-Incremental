@@ -7,14 +7,18 @@ class ResourceManager:
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
-        self.planet_size = 25 # 25x25 grid
+        self.planet_size = 25 # 25x25 grid, should be an odd number
 
         self.colors = {
+            "near-black": "#161616",
             "dark-bg": "#1e1e1e",
             "bg": "#232427",
             "old-bg": "#272727",
             "blue-bg": '#202124',
+            "selected-filter": "#000000FF",
+
             "light-text": "#c4c4c4",
+
             "red": "#f7918a",
             "orange": "#f7c28a",
             "orellow": "#f7d68a",
@@ -106,6 +110,7 @@ class ResourceManager:
         self.create_building_grid()
 
     def save(self):
+        print("Saving Game..")
         with open(self.resource_path('user_data.json'), 'w') as f:
             json.dump(self.data, f, indent=2)
 

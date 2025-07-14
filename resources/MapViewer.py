@@ -36,12 +36,11 @@ class MapViewer(QGraphicsView):
             self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
 
         self.highlighted_item = None
-        self.highlight_selected_item(int(self.planet_size/2), int(self.planet_size/2))
         self.setStyleSheet("QGraphicsView { border: none; }")
 
         # self.fixed_button = QPushButton("Toggle Grid", self)
         self.fixed_button = QPushButton(self)
-        self.fixed_button.setStyleSheet("background: transparent; padding-left: 4px; padding-right: 4px;")
+        self.fixed_button.setStyleSheet("background: transparent; padding-left: 4px; padding-right: 4px; border: none")
         icon_pixmap = QPixmap(self.parent.resources.resource_path('assets/icons/grid.svg')).scaled(84, 84, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.fixed_button.setIcon(QIcon(icon_pixmap))
 
@@ -168,7 +167,7 @@ class MapViewer(QGraphicsView):
         t = QGroupBox(widget)
         t.setFixedHeight(self.grid_size - self.margin)
         t.setFixedWidth(self.grid_size - self.margin)
-        t.setStyleSheet('QGroupBox { border: 3px solid #8AB4F7; padding: 10px; background: transparent; border-radius: 14px;}')
+        t.setStyleSheet(f'QGroupBox {{ border: 3px solid #8AB4F7; padding: 10px; background: {self.parent.resources.colors['selected-filter']}; border-radius: 14px; }}')
 
         proxy_widget = QGraphicsProxyWidget()
         proxy_widget.setWidget(widget)
@@ -183,7 +182,6 @@ class MapViewer(QGraphicsView):
         self.scene.addItem(proxy_widget)
 
     def upgrade_clicked(self, event, x, y):
-        print('upgrade clicked')
         building_data = self.parent.resources.building_grid[x,y]
         self.current_selected_coords = x, y
         if self.parent.building_info_right_panel.currentIndex != 0:
@@ -231,6 +229,7 @@ class MapViewer(QGraphicsView):
         self.parent.resources.add_building(x, y, name)
         self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
         self.parent.building_info_right_panel.setCurrentIndex(0)
+        self.upgrade_clicked(None, x, y)
     
     def toggle_grid(self):
         """Toggle grid visibility."""

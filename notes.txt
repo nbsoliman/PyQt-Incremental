@@ -1,4 +1,6 @@
-Building Notes:
+------------------------------------
+BUILDING NOTES
+------------------------------------
 
 1. Tree Cutter: Plant Tree, wait 60s, choose between cut tree or harvest saplings to grow more. when you cut a tree get a random number bettween 1-3 logs. then you can upgrade this to increase both the min and max separately as well as reduce the amount of time for trees to grow, and how many trees you can have planted at the same time. 
 
@@ -25,57 +27,13 @@ Choose a direction which yields diff resources. so diff mines can specialize in 
   4. **Crop Rotation Strategy**: Unlock different crop types that improve soil fertility and boost future crop output.
   5. **Climate Control**: Upgrade greenhouses or other technologies to create a microclimate, enhancing growth speed and yield predictability.
 
-from dataclasses import dataclass
-from typing import Any, Dict
+------------------------------------
+IDEA SCRATCHWORK
+------------------------------------
 
-@dataclass
-class ResourceVariable:
-    resource_name: str
-    update_frequency: int  # Update frequency in milliseconds
-    resource_value: int
+- expedition structure to send ships on expeditions. different levels. different resources. each expedition has a chance to drop cards (dupes can upgrade the card)
+- upgrading/rerolling/modifying stats on cards
+- ships stats determined by card (add up to 4 more slots on the ship).
 
-# Example instances
+- profession system for citizens. miner profession gets 1.2x output when stationed in a mine for example
 
-# Example 1
-wood_resource = ResourceVariable(
-    resource_name="wood",
-    update_frequency=2000,
-    resource_value=22
-)
-
-# Example 2
-stone_resource = ResourceVariable(
-    resource_name="stone",
-    update_frequency=3500,
-    resource_value=15
-)
-
-# Example 3
-iron_resource = ResourceVariable(
-    resource_name="iron",
-    update_frequency=5000,
-    resource_value=30
-)
-
-# Example 4
-water_resource = ResourceVariable(
-    resource_name="water",
-    update_frequency=1000,
-    resource_value=50
-)
-
-# Example 5
-gold_resource = ResourceVariable(
-    resource_name="gold",
-    update_frequency=4500,
-    resource_value=5
-)
-
-# Store the resources in a collection for easy access
-resources: Dict[str, ResourceVariable] = {
-    wood_resource.resource_name: wood_resource,
-    stone_resource.resource_name: stone_resource,
-    iron_resource.resource_name: iron_resource,
-    water_resource.resource_name: water_resource,
-    gold_resource.resource_name: gold_resource
-}

@@ -50,14 +50,41 @@ class MainUI(QWidget):
 
         self.stackedWidget = QStackedWidget(self)
         self.stackedWidget.setCurrentIndex(0)
-        self.setStyleSheet(f'background: {self.resources.colors["dark-bg"]}')
+        self.setStyleSheet(f"""
+            QWidget {{
+                background: {self.resources.colors["dark-bg"]};
+            }}
+            QLabel {{
+                background: transparent;
+                font-size: 14px;
+            }}
+            QGroupBox#blue-border {{
+                border: 2px solid {self.resources.colors["blue"]};
+                border-radius: 6px;
+            }}
+            QGroupBox#orellow-border {{
+                background: {self.resources.colors["near-black"]};
+                border: 2px solid {self.resources.colors["orellow"]};
+                border-radius: 6px;
+            }}
+            QPushButton {{
+                border: 2px solid {self.resources.colors["blue"]};
+                background: {self.resources.colors["blue"]};
+                color: {self.resources.colors["dark-bg"]};
+                font-weight: bold;
+                border-radius: 6px;
+            }}
+            QScrollArea {{
+                border: none;
+            }}
+        """)
 
         # For Testing Load Straight Into Game:
         self.loadGamePressed()
         QTimer.singleShot(100, lambda: self.tabWidget.setCurrentIndex(1))
 
         # Or Title Screen
-        # createMainMenu(self)
+        # create_main_menu(self)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stackedWidget)
@@ -110,7 +137,7 @@ class MainUI(QWidget):
     def newGamePressed(self):
         self.resources.create()
         # self.resources.load()
-        createHomePage(self) # Takes long time due to MapViewer Creation
+        create_home_page(self) # Takes long time due to MapViewer Creation
         self.stackedWidget.setCurrentIndex(1)
         self.center()
 
@@ -126,7 +153,7 @@ class MainUI(QWidget):
         # self.resize(750,550)
         self.center()
         self.resources.load()
-        createHomePage(self)
+        create_home_page(self)
         self.stackedWidget.setCurrentIndex(1)
         
         # Start idle loop worker
