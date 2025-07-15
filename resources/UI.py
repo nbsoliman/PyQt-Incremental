@@ -9,10 +9,10 @@ import pyqtgraph as pg
 from resources.Space3D import Planet3DWidget
 from resources.ScrollableGrid import ScrollableGrid
 from resources.MapViewer import MapViewer
-from resources.UITools import create_upgrade_box, once_ui_has_been_created
+from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label
 from resources.Space3D import Planet3DWidget
 
-def create_main_menu(parent):
+def main_menu_ui(parent):
     parent.backdrop_layout = QVBoxLayout()
     parent.backdrop_layout.setContentsMargins(0, 0, 0, 0)
     parent.backdrop_layout.setSpacing(0)
@@ -23,11 +23,11 @@ def create_main_menu(parent):
 
     # parent.planet_widget = Planet3DWidget()
     # parent.backdrop_layout.addWidget(parent.planet_widget)
-    parent.overlay_widget = create_overlay_layout(parent)
+    parent.overlay_widget = title_screen_ui(parent)
 
     parent.stackedWidget.addWidget(parent.this_widget)
 
-def create_overlay_layout(parent):
+def title_screen_ui(parent):
     # Overlay container
     overlay_layout = QVBoxLayout()
     overlay_layout.setContentsMargins(10, 10, 10, 10)
@@ -134,7 +134,7 @@ def create_overlay_layout(parent):
 
     return overlay_widget
 
-def create_home_page(parent):
+def home_ui(parent):
     home_page = QGridLayout()
     home_page.setContentsMargins(0, 0, 0, 0)
     parent.tabWidget = QTabWidget()
@@ -160,7 +160,7 @@ def create_home_page(parent):
     parent.tabWidget.setTabIcon(tabIndex1, QIcon(parent.resources.resource_path("assets/icons/planet.png")))
     parent.tabWidget.setTabIcon(tabIndex2, QIcon(parent.resources.resource_path("assets/icons/research.png")))
     parent.tabWidget.setTabIcon(tabIndex3, QIcon(parent.resources.resource_path("assets/icons/stats.png")))
-    parent.tabWidget.setTabIcon(tabIndex4, QIcon(parent.resources.resource_path("assets/gear.png")))
+    parent.tabWidget.setTabIcon(tabIndex4, add_padding_to_icon(QIcon(parent.resources.resource_path("assets/icons/gear2.png"))))
     parent.tabWidget.setIconSize(QSize(32, 32))
 
     parent.map_tab.setLayout(galaxy_map_ui(parent))
@@ -222,7 +222,7 @@ def interactive_map_stacked_widget(parent):
 
     parent.buildings_view_switch = QStackedWidget(parent)
     pages = OrderedDict([
-        ("Map", map_ui),
+        ("Map", building_map_ui),
         ("Base", base_page),
         ("Miner", mining_page),
         ("Housing", housing_page),
@@ -281,7 +281,7 @@ def galaxy_map_ui(parent):
     layout.addWidget(view)
     return layout
 
-def map_ui(parent):
+def building_map_ui(parent):
     layout = QGridLayout()
     layout.setColumnStretch(0, 4)
     layout.setColumnStretch(1, 1)
@@ -392,17 +392,19 @@ def base_page(parent):
 
     # Citizen Assignment Controls
     assign_group = QGroupBox("Assign Citizens")
-    assign_group.setObjectName("orellow-border")
+    assign_group.setObjectName("grey-border")
     assign_layout = QGridLayout()
     minus_button = QPushButton("-")
     minus_button.setStyleSheet("font-size: 24px")
+    minus_button.setMinimumWidth(120)
     # minus_button.clicked.connect(parent.decrease_citizen_assignment)
     plus_button = QPushButton("+")
     plus_button.setStyleSheet("font-size: 24px")
+    plus_button.setMinimumWidth(120)
     # plus_button.clicked.connect(parent.increase_citizen_assignment)
     citizen_input = QLineEdit("0")
     citizen_input.setStyleSheet("font-size: 24px; border: none;")
-    citizen_input.setFixedWidth(80)
+    citizen_input.setMinimumWidth(80)
     citizen_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
     citizen_input.setReadOnly(True)
 
@@ -423,21 +425,31 @@ def base_page(parent):
     # Upgrades Section
     scroll_area = QScrollArea()
     scroll_area.setWidgetResizable(True)
+    scroll_area.setMinimumWidth(420)
 
     upgrades_container = QWidget()
     upgrades_layout = QVBoxLayout(upgrades_container)
 
-    for i in range(5):
-        upgrade_id = f"upgrade{i+1}"
+    rank = 1
+    i = 0
+    for upgrade_key, internal_upgrade in parent.resources.game_data["buildings"]["Base"]["internal_upgrades"].items():
+        upgrade_id = f"upgrade{upgrade_key}"
+        upgrade_title = internal_upgrade.get('title', f"Upgrade Title {i+1}")
+        upgrade_desc_text = internal_upgrade.get('description', "Increases scan efficiency or rewards.")
+        
+        cost_dict = list(internal_upgrade['levels'].values())[rank - 1]['upgrade_cost']
+
         upgrade_box = create_upgrade_box(
             upgrade_id=upgrade_id,
-            upgrade_title=f"Upgrade Title {i+1}",
-            upgrade_desc_text="Increases scan efficiency or rewards.",
-            rank_text="Rank: 0/10",
-            cost_text="Cost: 100 gold",
+            upgrade_title=upgrade_title,
+            upgrade_desc_text=upgrade_desc_text,
+            rank_text=f"Rank: {rank}/10",
+            cost_dict=cost_dict,
             parent=parent
         )
         upgrades_layout.addWidget(upgrade_box)
+        
+        i += 1
 
     upgrades_container.setLayout(upgrades_layout)
     scroll_area.setWidget(upgrades_container)
@@ -452,6 +464,9 @@ def base_page(parent):
     layout.setRowStretch(1,1)
     layout.setRowStretch(2,1)
     layout.setRowStretch(3,0)
+
+    layout.setColumnStretch(0,1)
+    layout.setColumnStretch(1,0)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))

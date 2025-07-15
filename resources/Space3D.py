@@ -324,9 +324,9 @@ class Planet3DWidget(QOpenGLWidget):
 #         self.planet_widget = Planet3DWidget()
 #         backdrop_layout.addWidget(self.planet_widget)
 
-#         self.create_overlay_layout()
+#         self.title_screen_ui()
 
-#     def create_overlay_layout(self):
+#     def title_screen_ui(self):
 #         # Overlay container
 #         overlay_layout = QVBoxLayout()
 #         overlay_layout.setContentsMargins(0, 0, 0, 0)
@@ -393,12 +393,12 @@ class MainWindow(QMainWindow):
         self.backdrop_layout.addWidget(self.planet_widget)
 
         # Create the overlay layout
-        self.overlay_widget = self.create_overlay_layout()
+        self.overlay_widget = self.title_screen_ui()
 
         # Ensure overlay stays floating on resize
         self.resizeEvent = self.on_resize
 
-    def create_overlay_layout(self):
+    def title_screen_ui(self):
         # Overlay container
         overlay_layout = QVBoxLayout()
         overlay_layout.setContentsMargins(10, 10, 10, 10)

@@ -9,44 +9,182 @@
             },
             "levels": {
                 "1": {
-                    "production_rate": 10,
+                    "output_multiplier": 1,
                     "upgrade_cost": 100
                 },
                 "2": {
-                    "production_rate": 15,
+                    "output_multiplier": 1.5,
                     "upgrade_cost": 200
                 },
                 "3": {
-                    "production_rate": 20,
+                    "output_multiplier": 2,
                     "upgrade_cost": 400
                 },
                 "4": {
-                    "production_rate": 30,
+                    "output_multiplier": 4,
                     "upgrade_cost": 800
                 },
                 "5": {
-                    "production_rate": 45,
+                    "output_multiplier": 6,
                     "upgrade_cost": 1600
                 },
                 "6": {
-                    "production_rate": 65,
+                    "output_multiplier": 8,
                     "upgrade_cost": 3200
                 },
                 "7": {
-                    "production_rate": 90,
+                    "output_multiplier": 12,
                     "upgrade_cost": 6400
                 },
                 "8": {
-                    "production_rate": 120,
+                    "output_multiplier": 16,
                     "upgrade_cost": 12800
                 },
                 "9": {
-                    "production_rate": 155,
+                    "output_multiplier": 24,
                     "upgrade_cost": 25600
                 },
                 "10": {
-                    "production_rate": 200,
+                    "output_multiplier": 32,
                     "upgrade_cost": 51200
+                }
+            },
+            "internal_upgrades": {
+                "1": {
+                    "title": "Increase Min",
+                    "description": "Increases Minimum Resource Amount",
+                    "max_level": 10,
+                    "levels": {
+                        "1": {
+                            "min_resource_amount": 1,
+                            "upgrade_cost": {
+                                "gold" : 100,
+                                "carbon": 50
+                                }
+                        },
+                        "2": {
+                            "min_resource_amount": 3,
+                            "upgrade_cost": {
+                                "gold" : 300
+                                }
+                        },
+                        "3": {
+                            "min_resource_amount": 5,
+                            "upgrade_cost": {
+                                "gold" : 700,
+                                "carbon": 50
+                                }
+                        },
+                        "4": {
+                            "min_resource_amount": 10,
+                            "upgrade_cost": {
+                                "gold" : 1000
+                                }
+                        },
+                        "5": {
+                            "min_resource_amount": 15,
+                            "upgrade_cost": {
+                                "gold" : 2000
+                                }
+                        },
+                        "6": {
+                            "min_resource_amount": 25,
+                            "upgrade_cost": {
+                                "gold" : 3000
+                                }
+                        },
+                        "7": {
+                            "min_resource_amount": 40,
+                            "upgrade_cost": {
+                                "gold" : 5000
+                                }
+                        },
+                        "8": {
+                            "min_resource_amount": 60,
+                            "upgrade_cost": {
+                                "gold" : 7000
+                                }
+                        },
+                        "9": {
+                            "min_resource_amount": 90,
+                            "upgrade_cost": {
+                                "gold" : 10000
+                                }
+                        },
+                        "10": {
+                            "min_resource_amount": 150,
+                            "upgrade_cost": {
+                                "gold" : 20000
+                                }
+                        }
+                    }
+                },
+                "2": {
+                    "title": "Increase Max",
+                    "description": "Increases Maximum Resource Scan Amount",
+                    "max_level": 10,
+                    "levels": {
+                        "1": {
+                            "max_resource_amount": 10,
+                            "upgrade_cost": {
+                                "gold" : 200
+                            }
+                        },
+                        "2": {
+                            "max_resource_amount": 20,
+                            "upgrade_cost": {
+                                "gold" : 500
+                            }
+                        },
+                        "3": {
+                            "max_resource_amount": 30,
+                            "upgrade_cost": {
+                                "gold" : 1000
+                            }
+                        },
+                        "4": {
+                            "max_resource_amount": 50,
+                            "upgrade_cost": {
+                                "gold" : 2000
+                            }
+                        },
+                        "5": {
+                            "max_resource_amount": 75,
+                            "upgrade_cost": {
+                                "gold" : 3500
+                            }
+                        },
+                        "6": {
+                            "max_resource_amount": 100,
+                            "upgrade_cost": {
+                                "gold" : 5000
+                            }
+                        },
+                        "7": {
+                            "max_resource_amount": 150,
+                            "upgrade_cost": {
+                                "gold" : 7500
+                            }
+                        },
+                        "8": {
+                            "max_resource_amount": 200,
+                            "upgrade_cost": {
+                                "gold" : 10000
+                            }
+                        },
+                        "9": {
+                            "max_resource_amount": 300,
+                            "upgrade_cost": {
+                                "gold" : 15000
+                            }
+                        },
+                        "10": {
+                            "max_resource_amount": 500,
+                            "upgrade_cost": {
+                                "gold" : 25000
+                            }
+                        }
+                    }
                 }
             }
         },

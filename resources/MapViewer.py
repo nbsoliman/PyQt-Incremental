@@ -167,7 +167,7 @@ class MapViewer(QGraphicsView):
         t = QGroupBox(widget)
         t.setFixedHeight(self.grid_size - self.margin)
         t.setFixedWidth(self.grid_size - self.margin)
-        t.setStyleSheet(f'QGroupBox {{ border: 3px solid #8AB4F7; padding: 10px; background: {self.parent.resources.colors['selected-filter']}; border-radius: 14px; }}')
+        t.setStyleSheet(f'QGroupBox {{ border: 3px solid #8AB4F7; padding: 10px; background: { self.parent.resources.colors["selected-filter"] }; border-radius: 14px; }}')
 
         proxy_widget = QGraphicsProxyWidget()
         proxy_widget.setWidget(widget)

@@ -67,10 +67,22 @@ class MainUI(QWidget):
                 border: 2px solid {self.resources.colors["orellow"]};
                 border-radius: 6px;
             }}
+            QGroupBox#grey-border {{
+                background: {self.resources.colors["near-black"]};
+                border: 2px solid {self.resources.colors["light-text"]};
+                border-radius: 6px;
+            }}
             QPushButton {{
                 border: 2px solid {self.resources.colors["blue"]};
                 background: {self.resources.colors["blue"]};
                 color: {self.resources.colors["dark-bg"]};
+                font-weight: bold;
+                border-radius: 6px;
+            }}
+            QPushButton#disabled {{
+                border: 2px solid {self.resources.colors["light-text"]};
+                background: transparent;
+                color: {self.resources.colors["light-text"]};
                 font-weight: bold;
                 border-radius: 6px;
             }}
@@ -84,13 +96,20 @@ class MainUI(QWidget):
         QTimer.singleShot(100, lambda: self.tabWidget.setCurrentIndex(1))
 
         # Or Title Screen
-        # create_main_menu(self)
+        # main_menu_ui(self)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stackedWidget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         self.setLayout(main_layout)
+
+    # def resizeevent(self, event):
+    #     self.tabWidget.setStyleSheet(f"""
+    #         QTabBar::tab:last {{
+    #             margin-left: {self.size().width()-(121*4)}px;
+    #         }}
+    #     """)                
 
     def info_callback(self, data):
         if data[0] == "update-resource":
@@ -137,7 +156,7 @@ class MainUI(QWidget):
     def newGamePressed(self):
         self.resources.create()
         # self.resources.load()
-        create_home_page(self) # Takes long time due to MapViewer Creation
+        home_ui(self) # Takes long time due to MapViewer Creation
         self.stackedWidget.setCurrentIndex(1)
         self.center()
 
@@ -153,7 +172,7 @@ class MainUI(QWidget):
         # self.resize(750,550)
         self.center()
         self.resources.load()
-        create_home_page(self)
+        home_ui(self)
         self.stackedWidget.setCurrentIndex(1)
         
         # Start idle loop worker

@@ -1,7 +1,7 @@
 {
   "resources": {
     "people": 1,
-    "gold": 1900,
+    "gold": 100,
     "carbon": 50,
     "aluminum": 50,
     "silicon": 50,
@@ -14,7 +14,7 @@
   },
   "resource_rates": {
     "people": 0,
-    "gold": 10,
+    "gold": 0,
     "carbon": 0,
     "aluminum": 0,
     "silicon": 0,
@@ -53,66 +53,6 @@
       "location": {
         "x": 12,
         "y": 12
-      }
-    },
-    "2": {
-      "name": "Housing",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 11,
-        "y": 10
-      }
-    },
-    "3": {
-      "name": "Housing",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 12,
-        "y": 10
-      }
-    },
-    "4": {
-      "name": "Housing",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 13,
-        "y": 10
-      }
-    },
-    "5": {
-      "name": "Assembler",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 14,
-        "y": 11
-      }
-    },
-    "6": {
-      "name": "Assembler",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 14,
-        "y": 12
-      }
-    },
-    "7": {
-      "name": "Assembler",
-      "level": 1,
-      "internal_upgrade_1": 0,
-      "icon": "assets/icons/home.svg",
-      "location": {
-        "x": 14,
-        "y": 13
       }
     }
   }
