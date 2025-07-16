@@ -1,5 +1,5 @@
 from resources.ResourceManager import ResourceManager
-from resources.IdleThread import idle_thread_loop
+from resources.IdleThread import IdleThread
 from resources.UI import *
 import qdarktheme
 import json, os, sys, traceback
@@ -43,6 +43,8 @@ class MainUI(QWidget):
     def __init__(self):
         super().__init__()
         self.resources = ResourceManager()
+        self.idle_thread = IdleThread(self)
+
         self.setWindowTitle("GUI")
         self.setFixedSize(1600, 900)
         self.setMaximumSize(1600, 900)
@@ -92,7 +94,7 @@ class MainUI(QWidget):
         """)
 
         # For Testing Load Straight Into Game:
-        self.loadGamePressed()
+        self.newGamePressed()
         QTimer.singleShot(100, lambda: self.tabWidget.setCurrentIndex(1))
 
         # Or Title Screen
@@ -162,7 +164,7 @@ class MainUI(QWidget):
 
         # Start idle loop worker
         self.threadpool = QThreadPool()
-        worker = Worker(idle_thread_loop, self)
+        worker = Worker(self.idle_thread.start_loop)
         worker.signals.info.connect(self.info_callback)
         self.threadpool.start(worker)
 
@@ -177,7 +179,7 @@ class MainUI(QWidget):
         
         # Start idle loop worker
         self.threadpool = QThreadPool()
-        worker = Worker(idle_thread_loop, self)
+        worker = Worker(self.idle_thread.start_loop)
         worker.signals.info.connect(self.info_callback)
         self.threadpool.start(worker)
 

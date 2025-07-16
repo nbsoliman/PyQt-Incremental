@@ -206,7 +206,7 @@ class MapViewer(QGraphicsView):
     def buy_pressed(self, name):
         x, y = self.current_selected_coords[0], self.current_selected_coords[1]
         build_cost = self.parent.resources.game_data['buildings'][name]['build_cost']
-        resources = self.parent.resources.data['resources']
+        resources = self.parent.resources.user_data['resources']
         insufficient_resources = []
 
         # Check which resources are insufficient

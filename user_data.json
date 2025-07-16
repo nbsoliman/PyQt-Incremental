@@ -1,10 +1,10 @@
 {
   "resources": {
     "people": 1,
-    "gold": 100,
-    "carbon": 50,
-    "aluminum": 50,
-    "silicon": 50,
+    "gold": 10,
+    "carbon": 0,
+    "aluminum": 0,
+    "silicon": 0,
     "iron": 0,
     "hydrogen": 0,
     "copper": 0,
@@ -49,7 +49,18 @@
     "1": {
       "name": "Base",
       "level": 1,
-      "internal_upgrade_1": 0,
+      "search_count": 5,
+      "hidden_objects": 8,
+      "min_asteroid_value": 5,
+      "max_asteroid_value": 10,
+      "highscore": 0,
+      "internal_upgrades": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1
+      },
       "location": {
         "x": 12,
         "y": 12

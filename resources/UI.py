@@ -7,6 +7,7 @@ import json, os, sys, traceback, re, random, math
 import pyqtgraph as pg
 
 from resources.Space3D import Planet3DWidget
+from resources.MiniGames.BaseMiniGame import BaseMiniGame
 from resources.ScrollableGrid import ScrollableGrid
 from resources.MapViewer import MapViewer
 from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label
@@ -194,10 +195,10 @@ def home_ui(parent):
     parent.resource_labels = {}
     parent.resource_rate_labels = {}
 
-    for resource, amount in parent.resources.data['resources'].items():
+    for resource, amount in parent.resources.user_data['resources'].items():
         if amount > 0:
             parent.resource_labels[resource] = QLabel(str(amount))
-            parent.resource_rate_labels[resource] = QLabel(f"{parent.resources.data['resource_rates'].get(resource, 0)}/s")
+            parent.resource_rate_labels[resource] = QLabel(f"{parent.resources.user_data['resource_rates'].get(resource, 0)}/s")
 
     parent.resource_groups = {}
 
@@ -249,7 +250,7 @@ def galaxy_map_ui(parent):
     layout = QVBoxLayout(parent)
 
     # Create graphics scene and view
-    scene_size = 1080
+    scene_size = 840
     scene = QGraphicsScene(-scene_size//2, -scene_size//2, scene_size, scene_size)
     view = QGraphicsView(scene)
     # view.setFixedSize(scene_size + 2, scene_size + 2)
@@ -270,8 +271,9 @@ def galaxy_map_ui(parent):
         y = math.sin(angle_rad) * orbit_radius
 
         # Create a clickable button as the planet
-        planet_button = QPushButton(f"P{i+1}")
-        planet_button.setFixedSize(30, 30)
+        planet_button = QPushButton(f"Planet {i+1}")
+        planet_button.setStyleSheet(f"border: 2px solid {parent.resources.colors['light-text']}; border-radius: 40px; background: transparent;")
+        planet_button.setFixedSize(80, 80)
         proxy = QGraphicsProxyWidget()
         proxy.setWidget(planet_button)
         proxy.setPos(QPointF(x - planet_button.width()/2, y - planet_button.height()/2))
@@ -379,16 +381,33 @@ def base_page(parent):
     # Description
     description = QLabel(
         "Initiate a scan to search for salvageable debris around the planet. "
-        "Find gold and other resources. Assign citizens to automate scans."
+        "Find gold by scanning the correct sectors. Assign citizens to automate scans. "
+        f"We know there are {parent.resources.user_data['buildings']['1']['hidden_objects']} asteroids "
+        f"hidden in these regions but we can only scan {parent.resources.user_data['buildings']['1']['search_count']} regions. Choose wisely.."
     )
     description.setWordWrap(True)
     description.setStyleSheet("font-size: 14px;")
 
-    # Scan Button
-    scan_button = QPushButton("Initiate Scan")
-    scan_button.setFixedHeight(40)
-    scan_button.setStyleSheet(f"background: {parent.resources.colors['green']}; border: {parent.resources.colors['green']};")
-    # scan_button.clicked.connect(parent.initiate_scan_clicked)
+    # Mini Game Info GB
+    base_mini_game_info_gb = QGroupBox("")
+    base_mini_game_info_layout = QHBoxLayout()
+
+    parent.scansRemainingLabel = QLabel("Scans Remaining: 4")
+    parent.detectedLootLabel = QLabel("Detected Loot: 4")
+    parent.minLootValueLabel = QLabel("Min Loot Value: 5")
+    parent.maxLootValueLabel = QLabel("Max Loot Value: 10")
+    parent.highscoreLabel = QLabel("Highscore: 5")
+
+    base_mini_game_info_layout.addWidget(parent.scansRemainingLabel)
+    base_mini_game_info_layout.addWidget(parent.detectedLootLabel)
+    base_mini_game_info_layout.addWidget(parent.minLootValueLabel)
+    base_mini_game_info_layout.addWidget(parent.maxLootValueLabel)
+    base_mini_game_info_layout.addWidget(parent.highscoreLabel)
+    
+    base_mini_game_info_gb.setLayout(base_mini_game_info_layout)
+
+    # Base Mini Game
+    parent.base_mini_game = BaseMiniGame(parent)
 
     # Citizen Assignment Controls
     assign_group = QGroupBox("Assign Citizens")
@@ -433,6 +452,8 @@ def base_page(parent):
     rank = 1
     i = 0
     for upgrade_key, internal_upgrade in parent.resources.game_data["buildings"]["Base"]["internal_upgrades"].items():
+        rank = parent.resources.user_data['buildings']['1']['internal_upgrades'][str(upgrade_key)]
+        # print(parent.resources.user_data['buildings']['1']['Base']['internal_upgrades'][str(upgrade_key)])
         upgrade_id = f"upgrade{upgrade_key}"
         upgrade_title = internal_upgrade.get('title', f"Upgrade Title {i+1}")
         upgrade_desc_text = internal_upgrade.get('description', "Increases scan efficiency or rewards.")
@@ -455,22 +476,25 @@ def base_page(parent):
     scroll_area.setWidget(upgrades_container)
 
     layout.addWidget(header_label, 0, 0, 1, 2)
-    layout.addWidget(scroll_area, 1, 1, 3, 1)
+    layout.addWidget(scroll_area, 1, 1, 4, 1)
     layout.addWidget(description, 1, 0, 1, 1)
-    layout.addWidget(scan_button, 2, 0)
-    layout.addWidget(assign_group, 3, 0)
+    layout.addWidget(parent.base_mini_game_info_gb, 2, 0, 1, 1)
+    layout.addWidget(parent.base_mini_game, 3, 0)
+    # layout.addWidget(scan_button, 3, 0)
+    layout.addWidget(assign_group, 4, 0)
     
     layout.setRowStretch(0,0)
-    layout.setRowStretch(1,1)
-    layout.setRowStretch(2,1)
-    layout.setRowStretch(3,0)
+    layout.setRowStretch(1,0)
+    layout.setRowStretch(2,0)
+    layout.setRowStretch(3,1)
+    layout.setRowStretch(4,0)
 
     layout.setColumnStretch(0,1)
     layout.setColumnStretch(1,0)
 
     back_button = QPushButton("Back")
     back_button.clicked.connect(lambda: parent.buildings_view_switch.setCurrentIndex(0))
-    layout.addWidget(back_button, 4, 0, Qt.AlignmentFlag.AlignLeft)
+    layout.addWidget(back_button, 5, 0, Qt.AlignmentFlag.AlignLeft)
 
     parent.setLayout(layout)
     return layout
@@ -625,12 +649,12 @@ def ui2(parent):
         progressBar.setValue(0)
         layout.addWidget(progressBar)
     
-    parent.timers = [QTimer(parent) for _ in range(5)]
-    speeds = [50, 200, 300, 400, 500]
+    # parent.timers = [QTimer(parent) for _ in range(5)]
+    # speeds = [50, 200, 300, 400, 500]
 
-    for index, timer in enumerate(parent.timers):
-        timer.timeout.connect(partial(parent.updateProgressBar, index))
-        timer.start(speeds[index])
+    # for index, timer in enumerate(parent.timers):
+    #     timer.timeout.connect(partial(parent.updateProgressBar, index))
+    #     timer.start(speeds[index])
 
     return layout
 
@@ -674,10 +698,10 @@ def ui3(parent):
         parent.data_line2.setData(parent.x, parent.y2)
         parent.data_line3.setData(parent.x, parent.y3)
 
-    parent.timer = QTimer()
-    parent.timer.setInterval(500)
-    parent.timer.timeout.connect(update_plot_data)
-    parent.timer.start()
+    # parent.timer = QTimer()
+    # parent.timer.setInterval(500)
+    # parent.timer.timeout.connect(update_plot_data)
+    # parent.timer.start()
     return layout
 
 def ui_settings(parent):

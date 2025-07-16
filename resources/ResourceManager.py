@@ -3,7 +3,7 @@ import numpy as np
 
 class ResourceManager:
     def __init__(self):
-        self.data = ''
+        self.user_data = ''
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
@@ -38,13 +38,13 @@ class ResourceManager:
         return os.path.join(base_path, relative_path)
 
     def create(self):
-        self.data = {
+        self.user_data = {
             "resources": {
                 "people": 1,
-                "gold": 100,
-                "carbon": 50,   # Essential building block for constructing basic structures and creating more advanced materials.
-                "aluminum": 50, # Lightweight metal, great for constructing frames and structural components.
-                "silicon": 50,  # Necessary for creating electronics, solar panels, and glass.
+                "gold": 10,
+                "carbon": 0,   # Essential building block for constructing basic structures and creating more advanced materials.
+                "aluminum": 0, # Lightweight metal, great for constructing frames and structural components.
+                "silicon": 0,  # Necessary for creating electronics, solar panels, and glass.
                 "iron": 0,      # Strong metal used for heavy construction and tools.
                 "hydrogen": 0,  # Fuel for power generation and advanced chemical processes
                 "copper": 0,    # Conductive metal essential for electrical systems.
@@ -54,7 +54,7 @@ class ResourceManager:
             },
             "resource_rates": {
                 "people": 0,
-                "gold": 10,
+                "gold": 0,
                 "carbon": 0,
                 "aluminum": 0,
                 "silicon": 0,
@@ -89,7 +89,18 @@ class ResourceManager:
                 "1": {
                     "name": "Base",
                     "level": 1,
-                    "internal_upgrade_1": 0,
+                    "search_count": 5,
+                    "hidden_objects": 8,
+                    "min_asteroid_value": 5,
+                    "max_asteroid_value": 10,
+                    "highscore": 0,
+                    "internal_upgrades": {
+                        "1": 1,
+                        "2": 1,
+                        "3": 1,
+                        "4": 1,
+                        "5": 1,
+                    },
                     "location": {
                         "x": int(self.planet_size/2),
                         "y": int(self.planet_size/2)
@@ -99,31 +110,31 @@ class ResourceManager:
         }
 
         with open(self.resource_path('user_data.json'), 'w') as f:
-            json.dump(self.data, f, indent=2)
+            json.dump(self.user_data, f, indent=2)
         
         self.create_building_grid()
 
     def load(self):
         with open(self.resource_path('user_data.json'), 'r') as f:
-            self.data = json.load(f)
+            self.user_data = json.load(f)
 
         self.create_building_grid()
 
     def save(self):
         print("Saving Game..")
         with open(self.resource_path('user_data.json'), 'w') as f:
-            json.dump(self.data, f, indent=2)
+            json.dump(self.user_data, f, indent=2)
 
     def create_building_grid(self):
         self.building_grid = np.full((self.planet_size, self.planet_size), None, dtype=object)
 
-        for building_id, building_info in self.data["buildings"].items():
+        for building_id, building_info in self.user_data["buildings"].items():
             x = building_info["location"]["x"]
             y = building_info["location"]["y"]
             self.building_grid[x, y] = building_info
 
     def add_building(self, x, y, name):
-        new_id = str(len(self.data["buildings"]) + 1)
+        new_id = str(len(self.user_data["buildings"]) + 1)
         new_building = {
             "name": name,
             "level": 1,
@@ -135,9 +146,17 @@ class ResourceManager:
             }
         }
 
-        self.data["buildings"][new_id] = new_building
+        self.user_data["buildings"][new_id] = new_building
 
         if hasattr(self, "building_grid"):
             self.building_grid[x, y] = new_building
 
         self.save()
+
+    def calculate_resource_rate(self, resource_name):
+        rate = 0
+        for worker_type, workers in self.user_data['workers'].items():
+            for level, count in workers.items():
+                if count > 0:
+                    rate += self.game_data['workers'][worker_type][level][resource_name] * count
+        return rate

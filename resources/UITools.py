@@ -28,8 +28,13 @@ def create_upgrade_box(upgrade_id, upgrade_title, upgrade_desc_text, rank_text, 
     cost_label.setStyleSheet("font-weight: bold;")
     setattr(parent, f"{upgrade_id}_cost", cost_label)
 
-    print(can_afford(parent.resources.data['resources'], cost_dict))
-    upgrade_button = QPushButton("Upgrade")
+    # print('Can Afford: ', can_afford(parent.resources.user_data['resources'], cost_dict))
+    affordable = can_afford(parent.resources.user_data['resources'], cost_dict)
+    if not affordable:
+        upgrade_button = QPushButton("Insufficient Resources")
+        upgrade_button.setObjectName("disabled")
+    else:
+        upgrade_button = QPushButton("Upgrade")
     setattr(parent, f"{upgrade_id}_button", upgrade_button)
     # upgrade_button.clicked.connect(getattr(parent, f"{upgrade_id}_clicked"))
 
@@ -58,7 +63,7 @@ def add_padding_to_icon(icon, padding=6):
     return padded_icon
 
 def create_cost_label(parent, cost_dict):
-    resources = parent.resources.data['resources']
+    resources = parent.resources.user_data['resources']
     cost_items = []
     for resource, amount in cost_dict.items():
         owned_amount = resources.get(resource, 0)
