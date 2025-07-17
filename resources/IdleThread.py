@@ -1,9 +1,18 @@
 import time
+from resources.Tools import can_afford
 
 class IdleThread:
     def __init__(self, parent):
         self.parent = parent
         self.start_time = time.time()
+        # Button and coressponding upgrade key mapping
+        self.check_affordables = {
+            'upgrade1_button': "1",
+            'upgrade2_button': "2",
+            'upgrade3_button': "3",
+            'upgrade4_button': "4",
+            'upgrade5_button': "5",
+        }
 
     def define_tasks(self, info_callback):
         self.tasks = {
@@ -17,6 +26,12 @@ class IdleThread:
                 "func": self.parent.resources.save,
                 "args": [],
                 "interval": 30,
+                "last_run": 0
+            },
+            "update_affordable_statuses": {
+                "func": self.update_affordable_statuses,
+                "args": [info_callback],
+                "interval": 1,
                 "last_run": 0
             }
         }
@@ -45,3 +60,12 @@ class IdleThread:
                 resource_quantity = self.parent.resources.user_data['resources'][resource_name]
 
                 info_callback.emit(['update-resource', resource_name, resource_quantity, rate])
+
+    def update_affordable_statuses(self, info_callback):
+        for button_attr, upgrade_key in self.check_affordables.items():
+            level_of_internal_upgrade = self.parent.resources.user_data['buildings']['1']['internal_upgrades'][upgrade_key]
+            name_of_building = self.parent.resources.user_data['buildings']['1']['name']
+            cost_of_internal_upgrade = self.parent.resources.game_data['buildings'][name_of_building]['internal_upgrades'][upgrade_key]["levels"][str(level_of_internal_upgrade)]["upgrade_cost"]
+            affordable = can_afford(self.parent.resources.user_data['resources'], cost_of_internal_upgrade)
+            button = getattr(self.parent, button_attr)
+            info_callback.emit(['update-button-with-affordable-status', button, affordable])

@@ -7,7 +7,7 @@ class ResourceManager:
         with open(self.resource_path('game_data.json'), 'r') as f:
             self.game_data = json.load(f)
 
-        self.planet_size = 25 # 25x25 grid, should be an odd number
+        self.planet_size = 11 # 11x11 grid, should be an odd number
 
         self.colors = {
             "near-black": "#161616",

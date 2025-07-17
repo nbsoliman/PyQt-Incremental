@@ -81,6 +81,13 @@ class MainUI(QWidget):
                 font-weight: bold;
                 border-radius: 6px;
             }}
+            QPushButton#default {{
+                border: 2px solid {self.resources.colors["blue"]};
+                background: {self.resources.colors["blue"]};
+                color: {self.resources.colors["dark-bg"]};
+                font-weight: bold;
+                border-radius: 6px;
+            }}
             QPushButton#disabled {{
                 border: 2px solid {self.resources.colors["light-text"]};
                 background: transparent;
@@ -117,7 +124,7 @@ class MainUI(QWidget):
         if data[0] == "update-resource":
             self.resource_labels[data[1]].setText(str(data[2]))
             self.resource_rate_labels[data[1]].setText(f"{str(data[3])}/s")
-        if data[0] == "not-enough-of-resource":
+        elif data[0] == "not-enough-of-resource":
             self.resource_groups[data[1]].setStyleSheet(
             f'font-size: 14px; margin-left:10px; background: {self.resources.colors["red"]}')
             QTimer.singleShot(
@@ -125,7 +132,22 @@ class MainUI(QWidget):
                 lambda: self.resource_groups[data[1]].setStyleSheet(
                     'font-size: 14px; margin-left:10px; background: transparent'
                 )
-            )  
+            )
+        elif data[0] == "update-button-with-affordable-status":
+            button = data[1]
+            affordable = data[2]
+
+            if not affordable:
+                button.setText("Insufficient Resources")
+                button.setObjectName("disabled")
+            else:
+                button.setText("Upgrade")
+                button.setObjectName("default")
+
+            button.style().unpolish(button)
+            button.style().polish(button)
+            button.update()
+
     def updateProgressBar(self, index):
         progressBar = self.progressBars[index]
         value = progressBar.value() + 1

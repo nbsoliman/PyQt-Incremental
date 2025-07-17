@@ -1,8 +1,11 @@
 import sys, os, math
 try:
     from ResourceManager import ResourceManager
+    from Tools import transaction
 except:
     from resources.ResourceManager import ResourceManager
+    from resources.Tools import transaction
+
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -30,10 +33,7 @@ class MapViewer(QGraphicsView):
         self.load_clickable_objects_from_save()
         initial_zoom_factor = 0.45
         self.scale(initial_zoom_factor, initial_zoom_factor)
-        if self.dimensions % 2 != 0:
-            self.centerOn(self.dimensions/2, self.dimensions/2)
-        else:
-            self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
+        self.centerOn(int(self.dimensions/2), int(self.dimensions/2))
 
         self.highlighted_item = None
         self.setStyleSheet("QGraphicsView { border: none; }")
@@ -206,30 +206,13 @@ class MapViewer(QGraphicsView):
     def buy_pressed(self, name):
         x, y = self.current_selected_coords[0], self.current_selected_coords[1]
         build_cost = self.parent.resources.game_data['buildings'][name]['build_cost']
-        resources = self.parent.resources.user_data['resources']
-        insufficient_resources = []
-
-        # Check which resources are insufficient
-        for resource_required, amount_required in build_cost.items():
-            if resources.get(resource_required, 0) < amount_required:
-                print(f'not enough {resource_required}')
-                insufficient_resources.append(resource_required)
-
-        # Emit callbacks for all insufficient resources and exit early
-        if insufficient_resources:
-            for res in insufficient_resources:
-                self.parent.info_callback(['not-enough-of-resource', res])
-            return
-
-        # If we reach here, we have enough of all resources – subtract the cost
-        for resource_required, amount_required in build_cost.items():
-            resources[resource_required] -= amount_required
-
-        print('Resources subtracted, proceeding...')
-        self.parent.resources.add_building(x, y, name)
-        self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
-        self.parent.building_info_right_panel.setCurrentIndex(0)
-        self.upgrade_clicked(None, x, y)
+        transaction_successful = transaction(self.parent, build_cost)
+        
+        if transaction_successful:
+            self.parent.resources.add_building(x, y, name)
+            self.create_building(x, y, name, self.parent.resources.game_data['buildings'][name]['icon'])
+            self.parent.building_info_right_panel.setCurrentIndex(0)
+            self.upgrade_clicked(None, x, y)
     
     def toggle_grid(self):
         """Toggle grid visibility."""
@@ -248,10 +231,7 @@ class MapViewer(QGraphicsView):
     def resizeEvent(self, event):
         QTimer.singleShot(0, self.update_fixed_button_position)
 
-        if self.dimensions % 2 != 0:
-            self.centerOn(self.dimensions/2, self.dimensions/2)
-        else:
-            self.centerOn(self.dimensions/2+self.grid_size/2, self.dimensions/2+self.grid_size/2)
+        self.centerOn(int(self.dimensions/2), int(self.dimensions/2))
 
     def wheelEvent(self, event, limited_zoom=True):
         if not limited_zoom:

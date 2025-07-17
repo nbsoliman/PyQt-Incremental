@@ -69,14 +69,16 @@ class BaseMiniGame(QGraphicsView):
     def reset_grid(self):
         try:
             self.number_of_hidden_items = self.parent.resources.user_data['buildings']['1']['hidden_objects']
+            self.number_of_attempts = self.parent.resources.user_data['buildings']['1']['search_count']
+            self.parent.scansRemainingLabel.setText(f"Scans Remaining: {self.number_of_attempts}")
+            self.parent.detectedLootLabel = QLabel(f"Loot Remaining: {self.number_of_hidden_items}")
+            self.parent.profitThisRunLabel = QLabel(f"Current Profits: <span style='color: {self.parent.resources.colors['orellow']};'>0 Gold</span>")
+            self.min_gold =  self.parent.resources.user_data['buildings']['1']['min_asteroid_value']
+            self.max_gold =  self.parent.resources.user_data['buildings']['1']['max_asteroid_value']
         except:
             self.number_of_hidden_items = 2
-
-        try:
-            self.number_of_attempts = self.parent.resources.user_data['buildings']['1']['search_count']
-        except:
             self.number_of_attempts = 4
-    
+
         self.scene.clear()
         self.squares = []
         self.rocks = []
@@ -84,7 +86,7 @@ class BaseMiniGame(QGraphicsView):
         self.number_of_hits_player_clicked = 0
         self.profit = 0
 
-        positions = [(i, j) for i in range(3) for j in range(3)]
+        positions = [(i, j) for i in range(self.grid_size) for j in range(self.grid_size)]
         rock_positions = set(random.sample(positions, self.number_of_hidden_items))
 
         for i in range(self.grid_size):
@@ -117,6 +119,21 @@ class BaseMiniGame(QGraphicsView):
             rock.setVisible(True)
             gold_earned = random.randint(self.min_gold, self.max_gold)
             self.profit += gold_earned
+            self.parent.profitThisRunLabel.setText(f"Current Profits: <span style='color: {self.parent.resources.colors['orellow']};'>{self.profit} Gold</span>")
+            remaining_rocks = self.parent.resources.user_data['buildings']['1']['hidden_objects'] - self.number_of_hits_player_clicked
+            print('remaining', remaining_rocks)
+            self.parent.detectedLootLabel.setText(f"Loot Remaining: {remaining_rocks}")
+            print('this label not setting')
+
+        scans_remaining = self.number_of_attempts - self.clicked_count-1
+        if scans_remaining <= 3:
+            color = self.parent.resources.colors['red']
+        elif scans_remaining <=5:
+            color = self.parent.resources.colors['yellow']
+        else:
+            color = None
+        self.parent.scansRemainingLabel.setText(f"Scans Remaining: <span style='color: {color};'>{scans_remaining}</span>")
+
         self.clicked_count += 1
         if self.clicked_count == self.number_of_attempts:
             self.show_results_screen()
@@ -189,6 +206,7 @@ class BaseMiniGame(QGraphicsView):
             if self.profit > self.parent.resources.user_data['buildings']['1']['highscore']:
                 self.parent.resources.user_data['buildings']['1']['highscore'] = self.profit
                 self.parent.resources.save()
+                self.parent.highscoreLabel.setText(f"Highscore: <span style='color: {self.parent.resources.colors['orellow']};'>{str(self.profit)} Gold</span>")
                 highscore_text = 'New Highscore!'
                 highscore_text_item = QGraphicsTextItem(highscore_text, overlay)
                 continue_font = highscore_text_item.font()

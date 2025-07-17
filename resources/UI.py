@@ -10,7 +10,7 @@ from resources.Space3D import Planet3DWidget
 from resources.MiniGames.BaseMiniGame import BaseMiniGame
 from resources.ScrollableGrid import ScrollableGrid
 from resources.MapViewer import MapViewer
-from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label
+from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label, create_mini_game_info_layout
 from resources.Space3D import Planet3DWidget
 
 def main_menu_ui(parent):
@@ -389,23 +389,8 @@ def base_page(parent):
     description.setStyleSheet("font-size: 14px;")
 
     # Mini Game Info GB
-    base_mini_game_info_gb = QGroupBox("")
-    base_mini_game_info_layout = QHBoxLayout()
-
-    parent.scansRemainingLabel = QLabel("Scans Remaining: 4")
-    parent.detectedLootLabel = QLabel("Detected Loot: 4")
-    parent.minLootValueLabel = QLabel("Min Loot Value: 5")
-    parent.maxLootValueLabel = QLabel("Max Loot Value: 10")
-    parent.highscoreLabel = QLabel("Highscore: 5")
-
-    base_mini_game_info_layout.addWidget(parent.scansRemainingLabel)
-    base_mini_game_info_layout.addWidget(parent.detectedLootLabel)
-    base_mini_game_info_layout.addWidget(parent.minLootValueLabel)
-    base_mini_game_info_layout.addWidget(parent.maxLootValueLabel)
-    base_mini_game_info_layout.addWidget(parent.highscoreLabel)
+    base_mini_game_info_layout = create_mini_game_info_layout(parent)
     
-    base_mini_game_info_gb.setLayout(base_mini_game_info_layout)
-
     # Base Mini Game
     parent.base_mini_game = BaseMiniGame(parent)
 
@@ -429,8 +414,8 @@ def base_page(parent):
 
     desc2 = QLabel(
         "Initiate a scan to search for salvageable debris around the planet. "
-        "Find gold and other resources. Assign citizens to automate scans."
-        "For each citizen working in the Base of Operations. You will generate your highscore every second."
+        "Assign citizens to automate scans. For each citizen working in the Base of Operations. "
+        f"You will generate your highscore every second ({parent.resources.user_data['buildings']['1']['highscore']})."
     )
     desc2.setWordWrap(True)
     desc2.setStyleSheet("font-size: 14px;")
@@ -478,7 +463,7 @@ def base_page(parent):
     layout.addWidget(header_label, 0, 0, 1, 2)
     layout.addWidget(scroll_area, 1, 1, 4, 1)
     layout.addWidget(description, 1, 0, 1, 1)
-    layout.addWidget(parent.base_mini_game_info_gb, 2, 0, 1, 1)
+    layout.addLayout(base_mini_game_info_layout, 2, 0)
     layout.addWidget(parent.base_mini_game, 3, 0)
     # layout.addWidget(scan_button, 3, 0)
     layout.addWidget(assign_group, 4, 0)

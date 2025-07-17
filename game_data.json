@@ -327,7 +327,7 @@
                         "1": {
                             "max_resource_amount": 10,
                             "upgrade_cost": {
-                                "gold" : 200
+                                "gold" : 205
                             }
                         },
                         "2": {

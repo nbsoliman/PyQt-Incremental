@@ -1,7 +1,7 @@
 {
   "resources": {
     "people": 1,
-    "gold": 10,
+    "gold": 24,
     "carbon": 0,
     "aluminum": 0,
     "silicon": 0,
@@ -53,7 +53,7 @@
       "hidden_objects": 8,
       "min_asteroid_value": 5,
       "max_asteroid_value": 10,
-      "highscore": 0,
+      "highscore": 14,
       "internal_upgrades": {
         "1": 1,
         "2": 1,
@@ -62,8 +62,8 @@
         "5": 1
       },
       "location": {
-        "x": 12,
-        "y": 12
+        "x": 5,
+        "y": 5
       }
     }
   }
