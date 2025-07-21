@@ -441,7 +441,7 @@
         "Housing": {
             "icon": "assets/icons/home.svg",
             "max_level": 10,
-            "description": "Provides shelter to house more people.",
+            "description": "Provides shelter to house more citizens.",
             "build_cost": {
                 "gold" : 100
             },

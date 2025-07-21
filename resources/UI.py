@@ -10,7 +10,7 @@ from resources.Space3D import Planet3DWidget
 from resources.MiniGames.BaseMiniGame import BaseMiniGame
 from resources.ScrollableGrid import ScrollableGrid
 from resources.MapViewer import MapViewer
-from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label, create_mini_game_info_layout
+from resources.UITools import create_upgrade_box, once_ui_has_been_created, add_padding_to_icon, create_cost_label, create_mini_game_info_layout, update_citizens_assigned
 from resources.Space3D import Planet3DWidget
 
 def main_menu_ui(parent):
@@ -401,16 +401,18 @@ def base_page(parent):
     minus_button = QPushButton("-")
     minus_button.setStyleSheet("font-size: 24px")
     minus_button.setMinimumWidth(120)
-    # minus_button.clicked.connect(parent.decrease_citizen_assignment)
+    minus_button.clicked.connect(lambda: update_citizens_assigned("remove", parent))
+
     plus_button = QPushButton("+")
     plus_button.setStyleSheet("font-size: 24px")
     plus_button.setMinimumWidth(120)
-    # plus_button.clicked.connect(parent.increase_citizen_assignment)
-    citizen_input = QLineEdit("0")
-    citizen_input.setStyleSheet("font-size: 24px; border: none;")
-    citizen_input.setMinimumWidth(80)
-    citizen_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    citizen_input.setReadOnly(True)
+    plus_button.clicked.connect(lambda: update_citizens_assigned("add", parent))
+
+    parent.citizen_input = QLineEdit(parent.resources.user_data['buildings']['1']['active_workers'])
+    parent.citizen_input.setStyleSheet("font-size: 24px; border: none;")
+    parent.citizen_input.setMinimumWidth(80)
+    parent.citizen_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    parent.citizen_input.setReadOnly(True)
 
     desc2 = QLabel(
         "Initiate a scan to search for salvageable debris around the planet. "
@@ -421,7 +423,7 @@ def base_page(parent):
     desc2.setStyleSheet("font-size: 14px;")
 
     assign_layout.addWidget(minus_button, 0, 0)
-    assign_layout.addWidget(citizen_input, 0, 1)
+    assign_layout.addWidget(parent.citizen_input, 0, 1)
     assign_layout.addWidget(plus_button, 0, 2)
     assign_layout.addWidget(desc2, 1, 0, 1, 3)
     assign_group.setLayout(assign_layout)

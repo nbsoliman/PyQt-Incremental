@@ -40,7 +40,8 @@ class ResourceManager:
     def create(self):
         self.user_data = {
             "resources": {
-                "people": 1,
+                "citizens": 1,
+                "available_citizens": 1,
                 "gold": 10,
                 "carbon": 0,   # Essential building block for constructing basic structures and creating more advanced materials.
                 "aluminum": 0, # Lightweight metal, great for constructing frames and structural components.
@@ -53,7 +54,7 @@ class ResourceManager:
                 "oxygen": 0,    # Vital for human survival and certain chemical reactions.
             },
             "resource_rates": {
-                "people": 0,
+                "citizens": 0,
                 "gold": 0,
                 "carbon": 0,
                 "aluminum": 0,
@@ -89,6 +90,7 @@ class ResourceManager:
                 "1": {
                     "name": "Base",
                     "level": 1,
+                    "active_workers": 0,
                     "search_count": 5,
                     "hidden_objects": 8,
                     "min_asteroid_value": 5,

@@ -134,3 +134,13 @@ def create_mini_game_info_layout(parent):
     layout.addWidget(highscore_group)
 
     return layout
+
+def update_citizens_assigned(action, parent):
+    current_value = int(parent.citizen_input.text())
+    if action == "add" and parent.resources.user_data['resources']['available_citizens'] >= 1:
+        new_value = current_value + 1
+    elif action == "remove" and current_value > 0:
+        new_value = current_value - 1
+    else:
+        return
+    parent.citizen_input.setText(str(new_value))

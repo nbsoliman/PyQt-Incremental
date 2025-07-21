@@ -1,0 +1,13 @@
+> deb build
+    > Debian
+        -control
+        -postinst
+        -postrm
+        -prerm
+    > etc/system/system
+        -RICS.service
+        -container_load.service
+        -enable_sfp.service
+        -firmware_update_handler.service
+        -ip_update_handler.service
+    > opt/RICS
